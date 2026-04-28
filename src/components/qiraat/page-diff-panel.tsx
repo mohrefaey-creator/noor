@@ -10,7 +10,9 @@ import {
 import { DiffWord } from "@/components/qiraat/diff-word";
 import { toArabicDigits } from "@/lib/api/quran";
 
-const AUDIBLE_TYPES = new Set(["madd", "hamz", "imalah", "naql", "idgham", "izhar"]);
+// Audio-only differences (same letters/rasm, different sound). Includes harakah
+// (vowel mark) — letters identical, recitation differs.
+const AUDIBLE_TYPES = new Set(["madd", "hamz", "imalah", "naql", "idgham", "izhar", "harakah"]);
 const TYPE_LABEL: Record<string, string> = {
   harakah: "Vowel change",
   imalah: "Imālah · sound tilt",

@@ -7,6 +7,7 @@ import type { Edition } from "@/lib/api/quran";
 import { DEFAULT_RECITER_ID, getReciter } from "@/data/reciters";
 
 export type Theme = "light" | "dark";
+export type MushafView = "scanned" | "written";
 
 interface PrefState {
   riwayah: RiwayahId;
@@ -17,6 +18,7 @@ interface PrefState {
   showTranslation: boolean;
   focusMode: boolean;
   theme: Theme;
+  mushafView: MushafView;
   lastRead?: { surah: number; ayah: number; ts: number };
   bookmarks: { surah: number; ayah: number; addedAt: number }[];
   setRiwayah: (r: RiwayahId) => void;
@@ -27,6 +29,7 @@ interface PrefState {
   setShowTranslation: (v: boolean) => void;
   setFocusMode: (v: boolean) => void;
   setTheme: (t: Theme) => void;
+  setMushafView: (v: MushafView) => void;
   setLastRead: (surah: number, ayah: number) => void;
   toggleBookmark: (surah: number, ayah: number) => void;
 }
@@ -42,6 +45,7 @@ export const usePreferences = create<PrefState>()(
       showTranslation: true,
       focusMode: false,
       theme: "dark",
+      mushafView: "scanned",
       bookmarks: [],
       setRiwayah: (r) => set({ riwayah: r }),
       setTranslation: (e) => set({ translation: e }),
@@ -56,6 +60,7 @@ export const usePreferences = create<PrefState>()(
         }
         set({ theme: t });
       },
+      setMushafView: (v) => set({ mushafView: v }),
       setLastRead: (surah, ayah) => set({ lastRead: { surah, ayah, ts: Date.now() } }),
       toggleBookmark: (surah, ayah) => {
         const list = get().bookmarks;

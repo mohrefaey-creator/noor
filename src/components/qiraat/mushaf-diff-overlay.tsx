@@ -14,7 +14,9 @@ import type { RiwayahId } from "@/data/qiraat/metadata";
 import { getReciter } from "@/data/reciters";
 import { usePreferences } from "@/lib/store/preferences";
 
-const AUDIBLE_TYPES = new Set(["madd", "hamz", "imalah", "naql", "idgham", "izhar"]);
+// Audio-only differences (same letters/rasm, different sound). Vowel marks
+// included — the printed word looks the same, just sounds different.
+const AUDIBLE_TYPES = new Set(["madd", "hamz", "imalah", "naql", "idgham", "izhar", "harakah"]);
 
 interface MushafDiffOverlayProps {
   imgRef: React.RefObject<HTMLImageElement | null>;

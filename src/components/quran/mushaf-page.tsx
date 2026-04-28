@@ -10,6 +10,7 @@ import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { PageDiffPanel } from "@/components/qiraat/page-diff-panel";
 import { MushafDiffOverlay } from "@/components/qiraat/mushaf-diff-overlay";
+import { MushafTextView } from "@/components/quran/mushaf-text-view";
 import { getPageOverlays } from "@/data/qiraat/word-coords";
 import { getRiwayah } from "@/data/qiraat/metadata";
 
@@ -32,6 +33,7 @@ function buildSrcSet(page: number) {
   return WIDTHS.map((w) => `${pageImageUrl(page, w)} ${w}w`).join(", ");
 }
 
+
 export function MushafPage({ page, onAyahPlay, onTafsir, playingAyah }: MushafPageProps) {
   const [ayahs, setAyahs] = useState<PageAyah[] | null>(null);
   const [imgLoaded, setImgLoaded] = useState(false);
@@ -43,6 +45,8 @@ export function MushafPage({ page, onAyahPlay, onTafsir, playingAyah }: MushafPa
   const bookmarks = usePreferences((s) => s.bookmarks);
   const toggleBookmark = usePreferences((s) => s.toggleBookmark);
   const riwayah = usePreferences((s) => s.riwayah);
+  const mushafView = usePreferences((s) => s.mushafView);
+  const setMushafView = usePreferences((s) => s.setMushafView);
   const { isMemorized, markMemorized, unmarkMemorized } = useHifz();
 
   // Fetch the metadata for this page (ayah list) so we can show action chips beneath the image.
@@ -102,7 +106,13 @@ export function MushafPage({ page, onAyahPlay, onTafsir, playingAyah }: MushafPa
       {/* Qira'at diff panel — only when a non-Hafs riwāyah is active */}
       {ayahs && riwayah !== "hafs" && <PageDiffPanel riwayah={riwayah} ayahs={ayahs} />}
 
+      {/* Written-page mode renders Unicode text with red/green diff highlights instead of the scanned image. */}
+      {mushafView === "written" && ayahs && (
+        <MushafTextView page={page} ayahs={ayahs} riwayah={riwayah} />
+      )}
+
       {/* The scanned mushaf page itself */}
+      {mushafView === "scanned" && (
       <div className="relative">
         <div
           className="group relative block w-full mx-auto max-w-3xl rounded-3xl overflow-hidden mushaf-image-frame"
@@ -142,9 +152,15 @@ export function MushafPage({ page, onAyahPlay, onTafsir, playingAyah }: MushafPa
             />
           )}
           {imgError && (
-            <div className="aspect-[3/4.5] w-full flex flex-col items-center justify-center text-center text-ink-300 p-8 bg-black/[0.02]">
-              <p>Could not load page image.</p>
-              <p className="text-xs text-ink-500 mt-1">CDN may be unreachable. Try refreshing.</p>
+            <div className="aspect-[3/4.5] w-full flex flex-col items-center justify-center text-center text-ink-300 p-8 bg-black/[0.02] gap-3">
+              <p>Could not load this page image.</p>
+              <p className="text-xs text-ink-500">The mushaf image CDN may be slow or missing this page.</p>
+              <button
+                onClick={() => setMushafView("written")}
+                className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gold-400/15 border border-gold-400/30 text-gold-300 text-sm hover:bg-gold-400/25"
+              >
+                Switch to written text view
+              </button>
             </div>
           )}
           {/* Riwāyah count badge */}
@@ -171,6 +187,7 @@ export function MushafPage({ page, onAyahPlay, onTafsir, playingAyah }: MushafPa
           )}
         </div>
       </div>
+      )}
 
       {/* Ayah action strip — clickable chips per ayah on this page */}
       {groups.length > 0 && (

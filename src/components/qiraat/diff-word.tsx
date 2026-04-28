@@ -20,7 +20,10 @@ const TYPE_LABEL: Record<DiffEntry["diffs"][number]["type"], string> = {
   other: "Other variant",
 };
 
-const AUDIBLE_TYPES = new Set(["madd", "hamz", "imalah", "naql", "idgham", "izhar"]);
+// Audio differences = same skeleton (rasm), different pronunciation. Includes
+// vowel-mark changes (harakah) — the letters on the page are identical, only
+// the recited sound differs. Word/letter substitutions are the only "red" type.
+const AUDIBLE_TYPES = new Set(["madd", "hamz", "imalah", "naql", "idgham", "izhar", "harakah"]);
 
 export function DiffWord({ word, diff, riwayahName }: DiffWordProps) {
   const audible = AUDIBLE_TYPES.has(diff.type);

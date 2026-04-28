@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Info, BookOpen, Headphones } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Info, BookOpen, Headphones, Image as ImageIcon, Type } from "lucide-react";
 import { MushafPage } from "@/components/quran/mushaf-page";
 import { TafsirDrawer } from "@/components/quran/tafsir-drawer";
 import { InlineAudio } from "@/components/quran/inline-audio";
@@ -41,6 +41,8 @@ export default function MushafRoute({ params }: PageProps) {
   const tafsir = usePreferences((s) => s.tafsir);
   const riwayah = usePreferences((s) => s.riwayah);
   const setRiwayah = usePreferences((s) => s.setRiwayah);
+  const mushafView = usePreferences((s) => s.mushafView);
+  const setMushafView = usePreferences((s) => s.setMushafView);
 
   const riwayahMeta = riwayah !== "hafs" ? getRiwayah(riwayah) : null;
   const recitersForRiwayah = useMemo(
@@ -156,6 +158,39 @@ export default function MushafRoute({ params }: PageProps) {
             className="flex-1 min-w-[140px]"
           />
           <QiraatPicker value={riwayah} onChange={setRiwayah} />
+
+          {/* Scanned vs Written-text view toggle */}
+          <div className="inline-flex items-center rounded-xl glass p-0.5" role="group" aria-label="Page view mode">
+            <button
+              type="button"
+              onClick={() => setMushafView("scanned")}
+              aria-pressed={mushafView === "scanned"}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
+                mushafView === "scanned"
+                  ? "bg-gold-400/15 text-gold-300"
+                  : "text-ink-300 hover:text-ink-50"
+              }`}
+              title="Scanned King Fahd Mushaf"
+            >
+              <ImageIcon className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Scanned</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMushafView("written")}
+              aria-pressed={mushafView === "written"}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
+                mushafView === "written"
+                  ? "bg-gold-400/15 text-gold-300"
+                  : "text-ink-300 hover:text-ink-50"
+              }`}
+              title="Written Unicode text"
+            >
+              <Type className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Written</span>
+            </button>
+          </div>
+
           {riwayah !== "hafs" && (
             <Button
               variant={recitersForRiwayah.length > 0 ? "emerald" : "glass"}
@@ -189,8 +224,19 @@ export default function MushafRoute({ params }: PageProps) {
       </header>
 
       {showControls && (
-        <div className="glass rounded-2xl p-4 mb-5 text-sm text-ink-300">
-          <p>Pages are the official scanned <span className="text-gold-400">Mushaf al-Madinah</span> from the King Fahd Quran Printing Complex. Tap the page to zoom; tap an ayah chip below to play, memorize, bookmark, or open tafsir.</p>
+        <div className="glass rounded-2xl p-4 mb-5 text-sm text-ink-300 space-y-2">
+          <p>
+            Use the <span className="text-gold-400">Scanned</span> view for the official{" "}
+            <span className="text-gold-400">Mushaf al-Madinah</span> from the King Fahd Quran Printing Complex
+            (tap to zoom). Switch to <span className="text-gold-400">Written</span> for selectable Unicode text — useful when
+            the scanned page loads slowly.
+          </p>
+          <p className="text-xs text-ink-400">
+            With a non-Hafs Qirā&apos;ah selected, words are highlighted:
+            <span className="text-red-500 mx-1.5">red</span> = different word/letters,
+            <span className="text-emerald-glow mx-1.5">green</span> = same letters but different sound (madd, hamzah, imālah, vowel-mark, idghām, naql, iẓhār).
+            Tap any highlight for the full note.
+          </p>
         </div>
       )}
 
