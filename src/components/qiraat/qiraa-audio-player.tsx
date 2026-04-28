@@ -160,11 +160,16 @@ export function QiraaAudioPlayer({ open, riwayah, ayahs, onClose }: QiraaAudioPl
     <AnimatePresence>
       {open && (
         <motion.div
-          initial={{ y: 100, opacity: 0 }}
+          initial={{ y: 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 100, opacity: 0 }}
+          exit={{ y: 30, opacity: 0 }}
           transition={{ type: "spring", damping: 26, stiffness: 240 }}
-          className="fixed left-1/2 -translate-x-1/2 z-40 w-[min(640px,calc(100vw-1rem))] bottom-24 lg:bottom-6"
+          // Mobile: render inline in the document flow (below the page) so it never
+          // covers the mushaf. Desktop (lg+): float at the bottom of the viewport.
+          className={cn(
+            "mt-4 w-full",
+            "lg:mt-0 lg:fixed lg:left-1/2 lg:-translate-x-1/2 lg:z-40 lg:w-[min(640px,calc(100vw-1rem))] lg:bottom-6"
+          )}
         >
           <div className="glass-strong rounded-2xl shadow-2xl overflow-hidden">
             {/* Header */}
@@ -305,4 +310,3 @@ export function QiraaAudioPlayer({ open, riwayah, ayahs, onClose }: QiraaAudioPl
 
 // ESLint helper: 'pad' is referenced in the data layer; keep the import alive here if tree-shaken
 void pad;
-void cn;
