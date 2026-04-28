@@ -47,6 +47,13 @@ declare global {
   }
 }
 
+// iOS Safari and some Android engines ignore `continuous = true` and choke on
+// multiple alternatives. We detect platform and tune accordingly.
+const isIOS =
+  typeof navigator !== "undefined" &&
+  (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && (navigator as Navigator & { maxTouchPoints?: number }).maxTouchPoints! > 1));
+
 export function useSpeech({ lang = "ar-SA", onResult, onError }: UseSpeechOptions = {}) {
   const [supported, setSupported] = useState(false);
   const [listening, setListening] = useState(false);
@@ -54,9 +61,11 @@ export function useSpeech({ lang = "ar-SA", onResult, onError }: UseSpeechOption
   const [interim, setInterim] = useState("");
   const [finalText, setFinalText] = useState("");
   const [permission, setPermission] = useState<"unknown" | "granted" | "denied" | "prompt">("unknown");
+  const [resultCount, setResultCount] = useState(0);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const restartRef = useRef(false);
   const sessionIdRef = useRef(0);
+  const micStreamRef = useRef<MediaStream | null>(null);
   // Stash the latest callbacks so we can wire the recognition once and
   // not have to tear it down on every render.
   const onResultRef = useRef<UseSpeechOptions["onResult"]>(onResult);
@@ -74,11 +83,11 @@ export function useSpeech({ lang = "ar-SA", onResult, onError }: UseSpeechOption
     setSupported(true);
     const r = new SR();
     r.lang = lang;
-    r.continuous = true;
+    // iOS Safari ignores continuous=true (it stops after each utterance regardless),
+    // and tends to fail with maxAlternatives > 1. Tune for each platform.
+    r.continuous = !isIOS;
     r.interimResults = true;
-    // Multiple alternatives let us salvage matches when the top guess is wrong —
-    // very common with Arabic recognition where the first hypothesis often drops a hamzah.
-    r.maxAlternatives = 3;
+    r.maxAlternatives = isIOS ? 1 : 3;
     r.onstart = () => {
       setListening(true);
       setError(null);
@@ -104,6 +113,7 @@ export function useSpeech({ lang = "ar-SA", onResult, onError }: UseSpeechOption
       }
       cumulative = cumulative.trim();
       if (cumulative) {
+        setResultCount((c) => c + 1);
         onResultRef.current?.({
           transcript: cumulative,
           isFinal: hasFinal,
@@ -111,7 +121,7 @@ export function useSpeech({ lang = "ar-SA", onResult, onError }: UseSpeechOption
         });
       }
       // Keep the local state mirrors useful for the mic indicator UI.
-      setInterim(lastInterim);
+      setInterim(lastInterim || cumulative);
       if (hasFinal) setFinalText(cumulative);
     };
     r.onerror = (e) => {
@@ -156,12 +166,13 @@ export function useSpeech({ lang = "ar-SA", onResult, onError }: UseSpeechOption
       } catch {
         /* ignore */
       }
+      micStreamRef.current?.getTracks().forEach((t) => t.stop());
+      micStreamRef.current = null;
     };
   }, [lang]);
 
-  // Mobile browsers (Android Chrome, iOS Safari) require an explicit getUserMedia
-  // call from a user-gesture chain to grant mic permission. SpeechRecognition.start()
-  // alone often fails silently on mobile. Call this from a click/tap handler before start().
+  // Async permission request — call this AFTER start() to keep gesture chain valid.
+  // Holds onto the stream so the mic stays warm and SpeechRecognition can grab the same device.
   const requestMic = useCallback(async (): Promise<boolean> => {
     if (typeof window === "undefined") return false;
     if (!navigator.mediaDevices?.getUserMedia) {
@@ -177,8 +188,10 @@ export function useSpeech({ lang = "ar-SA", onResult, onError }: UseSpeechOption
           autoGainControl: true,
         },
       });
-      // Release the stream — SpeechRecognition will open its own internally.
-      stream.getTracks().forEach((t) => t.stop());
+      // Keep stream alive — releasing it can race with SpeechRecognition's own
+      // mic acquisition on Android, causing recognition to silently fail.
+      micStreamRef.current?.getTracks().forEach((t) => t.stop());
+      micStreamRef.current = stream;
       setPermission("granted");
       setError(null);
       return true;
@@ -196,6 +209,7 @@ export function useSpeech({ lang = "ar-SA", onResult, onError }: UseSpeechOption
     sessionIdRef.current += 1;
     setFinalText("");
     setInterim("");
+    setResultCount(0);
     try {
       recognitionRef.current.start();
     } catch {
@@ -211,6 +225,9 @@ export function useSpeech({ lang = "ar-SA", onResult, onError }: UseSpeechOption
     } catch {
       /* ignore */
     }
+    // Release the held mic stream when explicitly stopping.
+    micStreamRef.current?.getTracks().forEach((t) => t.stop());
+    micStreamRef.current = null;
   }, []);
 
   const reset = useCallback(() => {
@@ -219,7 +236,7 @@ export function useSpeech({ lang = "ar-SA", onResult, onError }: UseSpeechOption
     sessionIdRef.current += 1;
   }, []);
 
-  return { supported, listening, error, interim, finalText, permission, requestMic, start, stop, reset };
+  return { supported, listening, error, interim, finalText, permission, resultCount, requestMic, start, stop, reset };
 }
 
 /**

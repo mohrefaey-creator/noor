@@ -299,19 +299,21 @@ function TrainerSession({ config, ayahs, onEnd }: TrainerSessionProps) {
     [paused, config.strictness]
   );
 
-  const { supported, listening, start, stop, requestMic, permission, error: speechError } = useSpeech({ lang: "ar-SA", onResult });
+  const { supported, listening, start, stop, requestMic, permission, interim, resultCount, error: speechError } = useSpeech({ lang: "ar-SA", onResult });
   const micLevel = useMicLevel(listening && !paused);
   const [hasStarted, setHasStarted] = useState(false);
   const [requesting, setRequesting] = useState(false);
 
-  const handleBegin = useCallback(async () => {
+  // Mobile-critical sequence: start() must run *synchronously* inside the click
+  // handler so the user-gesture chain isn't broken by an `await`. We kick off
+  // the mic-permission request in parallel — the browser shows its native prompt
+  // either way, and on Android Chrome `recognition.start()` itself triggers it.
+  const handleBegin = useCallback(() => {
     if (requesting) return;
     setRequesting(true);
-    const ok = await requestMic();
-    setRequesting(false);
-    if (!ok) return;
     setHasStarted(true);
     start();
+    requestMic().finally(() => setRequesting(false));
   }, [requestMic, start, requesting]);
 
   // Stop the recognizer on unmount (no auto-start — mobile browsers require a user gesture).
@@ -540,6 +542,37 @@ function TrainerSession({ config, ayahs, onEnd }: TrainerSessionProps) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Live recognition feedback — proves the engine is hearing you. */}
+      {hasStarted && (
+        <div className="rounded-2xl border border-black/[0.06] bg-black/[0.02] px-4 py-3">
+          <div className="flex items-center justify-between gap-3 mb-1">
+            <span className="text-[10px] uppercase tracking-wider text-ink-500">
+              {listening ? "Listening" : "Idle"} · {resultCount} {resultCount === 1 ? "phrase" : "phrases"} recognized
+            </span>
+            {!listening && hasStarted && (
+              <button
+                type="button"
+                onClick={() => start()}
+                className="text-[10px] uppercase tracking-wider text-emerald-glow hover:text-emerald-glow/80"
+              >
+                Restart mic
+              </button>
+            )}
+          </div>
+          <p
+            dir="rtl"
+            lang="ar"
+            className="font-arabic text-lg leading-relaxed text-ink-100 min-h-[1.6em] text-right"
+          >
+            {interim || (
+              <span className="text-ink-500 text-sm font-sans">
+                Recite aloud — the words you say will appear here, then reveal on the page below.
+              </span>
+            )}
+          </p>
+        </div>
+      )}
 
       {!supported && (
         <div className="rounded-2xl border border-amber-400/25 bg-amber-400/5 px-4 py-3 text-sm text-amber-200">
