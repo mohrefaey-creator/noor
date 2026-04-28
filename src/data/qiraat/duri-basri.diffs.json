@@ -1,0 +1,18 @@
+[
+  {
+    "surah": 2,
+    "ayah": 10,
+    "diffs": [
+      {
+        "wordIndex": 11,
+        "hafs": "يَكْذِبُونَ",
+        "variant": "يَكْذِبُونَ",
+        "type": "harakah",
+        "note": {
+          "ar": "اتفاق مع حفص في هذه الكلمة",
+          "en": "Ad-Duri (Basri) agrees with Hafs here."
+        }
+      }
+    ]
+  }
+]

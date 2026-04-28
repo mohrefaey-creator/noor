@@ -1,0 +1,114 @@
+[
+  {
+    "surah": 1,
+    "ayah": 4,
+    "diffs": [
+      {
+        "wordIndex": 0,
+        "hafs": "مَالِكِ",
+        "variant": "مَلِكِ",
+        "type": "word",
+        "note": {
+          "ar": "قراءة قالون وورش بحذف الألف: مَلِكِ يَوْمِ ٱلدِّينِ",
+          "en": "Warsh and Qalun read 'Malik' (King) instead of 'Maalik' (Owner)."
+        }
+      }
+    ]
+  },
+  {
+    "surah": 2,
+    "ayah": 6,
+    "diffs": [
+      {
+        "wordIndex": 5,
+        "hafs": "ءَأَنذَرْتَهُمْ",
+        "variant": "أَأَنذَرْتَهُمْ",
+        "type": "hamz",
+        "note": {
+          "ar": "ورش يسهل الهمزة الثانية مع المد",
+          "en": "Warsh facilitates the second hamzah with elongation."
+        }
+      }
+    ]
+  },
+  {
+    "surah": 2,
+    "ayah": 58,
+    "diffs": [
+      {
+        "wordIndex": 17,
+        "hafs": "خَطَايَاكُمْ",
+        "variant": "خَطِيَّاتِكُمْ",
+        "type": "word",
+        "note": {
+          "ar": "قراءة ورش بصيغة جمع المؤنث السالم",
+          "en": "Warsh reads with the feminine plural form."
+        }
+      }
+    ]
+  },
+  {
+    "surah": 3,
+    "ayah": 81,
+    "diffs": [
+      {
+        "wordIndex": 5,
+        "hafs": "لَمَا",
+        "variant": "لِمَا",
+        "type": "harakah",
+        "note": {
+          "ar": "كسر اللام في رواية ورش",
+          "en": "Warsh reads 'limā' (with kasra) instead of 'lamā'."
+        }
+      }
+    ]
+  },
+  {
+    "surah": 19,
+    "ayah": 23,
+    "diffs": [
+      {
+        "wordIndex": 1,
+        "hafs": "ٱلْمَخَاضُ",
+        "variant": "ٱلْمَخَاضِ",
+        "type": "harakah",
+        "note": {
+          "ar": "كسر الضاد في رواية ورش",
+          "en": "Warsh reads with kasra on the daad."
+        }
+      }
+    ]
+  },
+  {
+    "surah": 2,
+    "ayah": 31,
+    "diffs": [
+      {
+        "wordIndex": 1,
+        "hafs": "ءَادَمَ",
+        "variant": "ءَادَمَ",
+        "type": "madd",
+        "note": {
+          "ar": "مد البدل: ورش يطوّل المد إلى ٦ حركات (إشباع) من طريق الأزرق، بينما حفص يقرؤه حركتين فقط.",
+          "en": "Madd al-Badal: Warsh extends the madd to 6 ḥarakāt (ishbāʿ) via ṭarīq al-Azraq, while Hafs reads only 2 ḥarakāt — same letters, longer sound."
+        }
+      }
+    ]
+  },
+  {
+    "surah": 2,
+    "ayah": 25,
+    "diffs": [
+      {
+        "wordIndex": 2,
+        "hafs": "ءَامَنُوا۟",
+        "variant": "ءَامَنُوا۟",
+        "type": "madd",
+        "note": {
+          "ar": "مد البدل في «ءامنوا» — ورش يطوّل المد إلى ٦ حركات، وحفص يقرأه حركتين.",
+          "en": "Madd al-Badal in 'āmanū' — Warsh elongates to 6 ḥarakāt; Hafs to 2."
+        }
+      }
+    ]
+  }
+]

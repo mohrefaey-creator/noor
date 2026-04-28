@@ -1,0 +1,34 @@
+[
+  {
+    "surah": 1,
+    "ayah": 4,
+    "diffs": [
+      {
+        "wordIndex": 0,
+        "hafs": "مَالِكِ",
+        "variant": "مَلِكِ",
+        "type": "word",
+        "note": {
+          "ar": "قراءة شعبة بحذف الألف",
+          "en": "Shu'bah reads 'Malik' (King) without the long alif."
+        }
+      }
+    ]
+  },
+  {
+    "surah": 2,
+    "ayah": 10,
+    "diffs": [
+      {
+        "wordIndex": 11,
+        "hafs": "يَكْذِبُونَ",
+        "variant": "يُكَذِّبُونَ",
+        "type": "word",
+        "note": {
+          "ar": "قراءة الكوفيين بضم الياء وتشديد الذال",
+          "en": "Shu'bah reads 'yukadhdhibūn' (they deny/falsify) instead of 'yakdhibūn' (they lie)."
+        }
+      }
+    ]
+  }
+]

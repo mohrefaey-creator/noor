@@ -1,0 +1,34 @@
+[
+  {
+    "surah": 1,
+    "ayah": 4,
+    "diffs": [
+      {
+        "wordIndex": 0,
+        "hafs": "مَالِكِ",
+        "variant": "مَلِكِ",
+        "type": "word",
+        "note": {
+          "ar": "قراءة قالون وورش بحذف الألف",
+          "en": "Qalun reads 'Malik' (King) instead of 'Maalik' (Owner)."
+        }
+      }
+    ]
+  },
+  {
+    "surah": 2,
+    "ayah": 58,
+    "diffs": [
+      {
+        "wordIndex": 8,
+        "hafs": "خَطَايَاكُمْ",
+        "variant": "خَطَايَاكُمْ",
+        "type": "madd",
+        "note": {
+          "ar": "اختلاف في المد عن قالون",
+          "en": "Slight elongation difference for Qalun."
+        }
+      }
+    ]
+  }
+]

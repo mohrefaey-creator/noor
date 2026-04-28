@@ -1,0 +1,266 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ────────────────────────────────────────────────────────────────────────
+   Theme tokens — light is the default, .dark flips body/glass/aurora and
+   then explicit `:root.dark` overrides further down rewrite each ink-utility
+   to its dark-theme counterpart.
+   ──────────────────────────────────────────────────────────────────────── */
+:root {
+  color-scheme: light;
+
+  /* Body aurora (light) */
+  --bg-grad-1: rgba(4, 120, 87, 0.14);
+  --bg-grad-2: rgba(234, 88, 12, 0.14);
+  --bg-grad-3: rgba(194, 65, 12, 0.08);
+
+  /* Selection (light) */
+  --sel-bg: rgba(234, 88, 12, 0.30);
+  --sel-fg: #1f1d18;
+
+  /* Surface alpha overlays for glass / hover / dividers (light = darken, dark = lighten) */
+  --surface-1: 0 0 0;            /* multiplied with /alpha at use sites */
+  --surface-shadow: rgba(31, 29, 24, 0.12);
+
+  /* Shimmer text brand stops (light) */
+  --shimmer-fg: #1f1d18;
+}
+
+:root.dark {
+  color-scheme: dark;
+
+  --bg-grad-1: rgba(26, 165, 131, 0.18);
+  --bg-grad-2: rgba(234, 88, 12, 0.10);
+  --bg-grad-3: rgba(99, 102, 241, 0.08);
+
+  --sel-bg: rgba(234, 88, 12, 0.35);
+  --sel-fg: #f7f6f2;
+
+  --surface-1: 255 255 255;
+  --surface-shadow: rgba(0, 0, 0, 0.5);
+
+  --shimmer-fg: #f7f6f2;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-ink-950 text-ink-100 antialiased;
+    background-image:
+      radial-gradient(ellipse 80% 60% at 50% -10%, var(--bg-grad-1), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 90% 30%, var(--bg-grad-2), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 10% 80%, var(--bg-grad-3), transparent 60%);
+    background-attachment: fixed;
+  }
+  ::selection {
+    background: var(--sel-bg);
+    color: var(--sel-fg);
+  }
+  /* Quranic text */
+  .font-arabic {
+    font-feature-settings: "liga", "calt", "kern";
+    line-height: 2.2;
+    padding-block: 0.12em;
+  }
+  .font-arabic.leading-none,
+  .font-arabic.leading-tight,
+  .font-arabic.leading-snug {
+    line-height: 1.55 !important;
+  }
+}
+
+@layer components {
+  .glass {
+    background-color: rgb(var(--surface-1) / 0.04);
+    border: 1px solid rgb(var(--surface-1) / 0.06);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px -12px var(--surface-shadow);
+  }
+  .glass-strong {
+    background-color: rgb(var(--surface-1) / 0.06);
+    border: 1px solid rgb(var(--surface-1) / 0.10);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+  .gold-text {
+    background: linear-gradient(135deg, #c2410c 0%, #ea580c 50%, #9a3412 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  :root.dark .gold-text {
+    background: linear-gradient(135deg, #fb923c 0%, #ea580c 50%, #b45309 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .emerald-text {
+    background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .shimmer-text {
+    background: linear-gradient(110deg, var(--shimmer-fg) 30%, #c2410c 50%, var(--shimmer-fg) 70%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 4s linear infinite;
+  }
+  .geometric-pattern {
+    background-image:
+      linear-gradient(30deg, rgba(234, 88, 12, 0.07) 12%, transparent 12.5%, transparent 87%, rgba(234, 88, 12, 0.07) 87.5%, rgba(234, 88, 12, 0.07)),
+      linear-gradient(150deg, rgba(4, 120, 87, 0.06) 12%, transparent 12.5%, transparent 87%, rgba(4, 120, 87, 0.06) 87.5%, rgba(4, 120, 87, 0.06));
+    background-size: 28px 50px;
+  }
+  .ayah-number {
+    @apply inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-medium text-gold-600 bg-gold-400/15 border border-gold-500/35 mx-1 align-middle;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgb(var(--surface-1) / 0.10);
+    border-radius: 9999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--surface-1) / 0.22);
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────────
+   Dark-mode ink palette inversion — per-utility overrides.
+   The Tailwind config defines the LIGHT theme palette. Under `:root.dark`
+   we rewrite every ink utility used in the codebase to its inverted value.
+   ──────────────────────────────────────────────────────────────────────── */
+:root.dark body {
+  background-color: #0a0907;
+  color: #ecebe4;
+}
+
+/* Backgrounds */
+:root.dark .bg-ink-700  { background-color: #34322a !important; }
+:root.dark .bg-ink-900  { background-color: #13120e !important; }
+:root.dark .bg-ink-950  { background-color: #0a0907 !important; }
+:root.dark .bg-ink-950\/30 { background-color: rgba(10, 9, 7, 0.30) !important; }
+:root.dark .bg-ink-950\/40 { background-color: rgba(10, 9, 7, 0.40) !important; }
+:root.dark .bg-ink-950\/55 { background-color: rgba(10, 9, 7, 0.55) !important; }
+:root.dark .bg-ink-950\/60 { background-color: rgba(10, 9, 7, 0.60) !important; }
+:root.dark .bg-ink-950\/80 { background-color: rgba(10, 9, 7, 0.80) !important; }
+:root.dark .bg-ink-950\/90 { background-color: rgba(10, 9, 7, 0.90) !important; }
+:root.dark .hover\:bg-ink-950\/80:hover { background-color: rgba(10, 9, 7, 0.80) !important; }
+
+/* Text — invert ink-50..ink-400 (light text on dark bg); ink-500 stays neutral mid */
+:root.dark .text-ink-50   { color: #f7f6f2 !important; }
+:root.dark .text-ink-100  { color: #ecebe4 !important; }
+:root.dark .text-ink-200  { color: #d6d3c4 !important; }
+:root.dark .text-ink-300  { color: #b8b4a0 !important; }
+:root.dark .text-ink-400  { color: #8e8a76 !important; }
+:root.dark .text-ink-500  { color: #6b6757 !important; }   /* mid grey, visible on both */
+:root.dark .text-ink-950  { color: #0a0907 !important; }   /* rare; e.g. on gold buttons */
+
+/* Borders — inverted similarly when used */
+:root.dark .border-ink-700 { border-color: #34322a !important; }
+:root.dark .border-ink-800 { border-color: #1f1d18 !important; }
+
+/* ────────────────────────────────────────────────────────────────────────
+   Dark-mode rescue for inline `bg-black/[α]` & `border-black/[α]` overlays
+   that components used (these were swapped from `bg-white/[α]` for light).
+   On dark, flip them back to white-alpha so they're visible on dark surfaces.
+   ──────────────────────────────────────────────────────────────────────── */
+:root.dark .bg-black\/\[0\.03\]      { background-color: rgba(255, 255, 255, 0.03); }
+:root.dark .bg-black\/\[0\.04\]      { background-color: rgba(255, 255, 255, 0.04); }
+:root.dark .bg-black\/\[0\.05\]      { background-color: rgba(255, 255, 255, 0.05); }
+:root.dark .bg-black\/\[0\.06\]      { background-color: rgba(255, 255, 255, 0.06); }
+:root.dark .bg-black\/\[0\.08\]      { background-color: rgba(255, 255, 255, 0.08); }
+:root.dark .border-black\/\[0\.05\]  { border-color: rgba(255, 255, 255, 0.08); }
+:root.dark .border-black\/\[0\.06\]  { border-color: rgba(255, 255, 255, 0.10); }
+:root.dark .border-black\/\[0\.08\]  { border-color: rgba(255, 255, 255, 0.12); }
+:root.dark .ring-black\/\[0\.06\]    { --tw-ring-color: rgba(255, 255, 255, 0.08); }
+:root.dark .hover\:bg-black\/\[0\.03\]:hover { background-color: rgba(255, 255, 255, 0.04); }
+:root.dark .hover\:bg-black\/\[0\.04\]:hover { background-color: rgba(255, 255, 255, 0.05); }
+:root.dark .hover\:bg-black\/\[0\.06\]:hover { background-color: rgba(255, 255, 255, 0.07); }
+
+/* Mushaf page image frame — same accents for both themes */
+.mushaf-image-frame {
+  background: linear-gradient(180deg, rgba(234, 88, 12, 0.10), rgba(234, 88, 12, 0.04));
+  border: 1px solid rgba(234, 88, 12, 0.35);
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--surface-1) / 0.04),
+    0 30px 80px -30px var(--surface-shadow),
+    0 0 60px rgba(234, 88, 12, 0.10);
+  cursor: zoom-in;
+}
+.mushaf-image-frame img {
+  background: #f5efe2;
+}
+
+/* Legacy mushaf-page text frame */
+.mushaf-page {
+  background:
+    radial-gradient(ellipse at top, rgba(234, 88, 12, 0.08), transparent 60%),
+    linear-gradient(180deg, rgba(255, 247, 237, 0.40), rgba(255, 247, 237, 0.10));
+  border: 1px solid rgba(234, 88, 12, 0.30);
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--surface-1) / 0.03),
+    inset 0 0 80px rgba(234, 88, 12, 0.06);
+}
+:root.dark .mushaf-page {
+  background:
+    radial-gradient(ellipse at top, rgba(234, 88, 12, 0.10), transparent 60%),
+    linear-gradient(180deg, rgba(255, 247, 237, 0.04), rgba(255, 247, 237, 0.01));
+}
+.mushaf-page::before,
+.mushaf-page::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  width: 56px;
+  height: 56px;
+  background-image:
+    linear-gradient(45deg, transparent 46%, rgba(234, 88, 12, 0.45) 47%, rgba(234, 88, 12, 0.45) 53%, transparent 54%),
+    linear-gradient(-45deg, transparent 46%, rgba(234, 88, 12, 0.45) 47%, rgba(234, 88, 12, 0.45) 53%, transparent 54%);
+  background-size: 14px 14px;
+  background-repeat: no-repeat;
+  background-position: 0 0, 0 0;
+  opacity: 0.6;
+}
+.mushaf-page::before { top: 8px; left: 8px; }
+.mushaf-page::after { bottom: 8px; right: 8px; }
+
+/* Hifz hidden-word styles */
+.hidden-blur {
+  filter: blur(8px);
+  opacity: 0.55;
+  transition: filter 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.45s ease;
+}
+.hidden-dashes {
+  color: transparent;
+  background: repeating-linear-gradient(90deg, currentColor 0 8px, transparent 8px 12px);
+  background-clip: text;
+  -webkit-background-clip: text;
+  opacity: 0.45;
+}
+.hidden-box {
+  color: transparent !important;
+  background: rgb(var(--surface-1) / 0.08);
+  border-radius: 6px;
+  display: inline-block;
+}
+.revealed {
+  filter: blur(0);
+  opacity: 1;
+  animation: reveal 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}

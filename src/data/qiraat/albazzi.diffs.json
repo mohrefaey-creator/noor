@@ -1,0 +1,18 @@
+[
+  {
+    "surah": 1,
+    "ayah": 4,
+    "diffs": [
+      {
+        "wordIndex": 0,
+        "hafs": "مَالِكِ",
+        "variant": "مَالِكِ",
+        "type": "harakah",
+        "note": {
+          "ar": "اتفاق مع حفص",
+          "en": "Al-Bazzi agrees with Hafs on this word."
+        }
+      }
+    ]
+  }
+]
