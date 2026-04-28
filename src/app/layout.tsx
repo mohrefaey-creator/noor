@@ -3,6 +3,7 @@ import { Inter, Amiri_Quran, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import { Sidebar } from "@/components/nav/sidebar";
 import { MobileNav } from "@/components/nav/mobile-nav";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -59,6 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-6 lg:pt-10">{children}</div>
           </main>
         </div>
+        <ThemeToggle className="lg:hidden fixed top-3 right-3 z-40 glass-strong shadow-lg" />
         <MobileNav />
         <Toaster />
       </body>
