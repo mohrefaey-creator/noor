@@ -53,6 +53,7 @@ export function useSpeech({ lang = "ar-SA", onResult, onError }: UseSpeechOption
   const [error, setError] = useState<string | null>(null);
   const [interim, setInterim] = useState("");
   const [finalText, setFinalText] = useState("");
+  const [permission, setPermission] = useState<"unknown" | "granted" | "denied" | "prompt">("unknown");
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const restartRef = useRef(false);
   const sessionIdRef = useRef(0);
@@ -116,8 +117,11 @@ export function useSpeech({ lang = "ar-SA", onResult, onError }: UseSpeechOption
     r.onerror = (e) => {
       setError(e.error);
       onErrorRef.current?.(e.error);
-      // For "no-speech" / "audio-capture" / "network", let onend trigger the restart.
-      // We don't bail out unless the user explicitly stopped.
+      // Permission errors are terminal — don't auto-restart, surface the state to the UI.
+      if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+        restartRef.current = false;
+        setPermission("denied");
+      }
     };
     r.onend = () => {
       setListening(false);
@@ -155,6 +159,37 @@ export function useSpeech({ lang = "ar-SA", onResult, onError }: UseSpeechOption
     };
   }, [lang]);
 
+  // Mobile browsers (Android Chrome, iOS Safari) require an explicit getUserMedia
+  // call from a user-gesture chain to grant mic permission. SpeechRecognition.start()
+  // alone often fails silently on mobile. Call this from a click/tap handler before start().
+  const requestMic = useCallback(async (): Promise<boolean> => {
+    if (typeof window === "undefined") return false;
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setPermission("denied");
+      setError("audio-capture");
+      return false;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
+      // Release the stream — SpeechRecognition will open its own internally.
+      stream.getTracks().forEach((t) => t.stop());
+      setPermission("granted");
+      setError(null);
+      return true;
+    } catch (e) {
+      const name = (e as { name?: string })?.name ?? "";
+      setPermission(name === "NotAllowedError" ? "denied" : "denied");
+      setError(name || "audio-capture");
+      return false;
+    }
+  }, []);
+
   const start = useCallback(() => {
     if (!recognitionRef.current) return;
     restartRef.current = true;
@@ -184,7 +219,7 @@ export function useSpeech({ lang = "ar-SA", onResult, onError }: UseSpeechOption
     sessionIdRef.current += 1;
   }, []);
 
-  return { supported, listening, error, interim, finalText, start, stop, reset };
+  return { supported, listening, error, interim, finalText, permission, requestMic, start, stop, reset };
 }
 
 /**

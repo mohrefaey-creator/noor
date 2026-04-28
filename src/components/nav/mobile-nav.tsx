@@ -1,14 +1,14 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Headphones, Sparkles, Mic, Search } from "lucide-react";
+import { BookOpen, Headphones, GraduationCap, Mic, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { href: "/mushaf", label: "Read", icon: BookOpen },
   { href: "/listen", label: "Listen", icon: Headphones },
   { href: "/hifz/trainer", label: "Train", icon: Mic, accent: true },
-  { href: "/hifz", label: "Hifz", icon: Sparkles },
+  { href: "/qiraat", label: "Qirā'āt", icon: GraduationCap },
   { href: "/search", label: "Search", icon: Search },
 ];
 

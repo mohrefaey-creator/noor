@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState, useCallback, Suspense } from "rea
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Pause, Play, RotateCcw, SkipForward, Square, Eye } from "lucide-react";
+import { ArrowLeft, Pause, Play, RotateCcw, SkipForward, Square, Eye, Mic } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
 import { TrainerSetup, type TrainerConfig } from "@/components/hifz/trainer-setup";
 import { HiddenWord } from "@/components/hifz/hidden-word";
@@ -299,19 +299,30 @@ function TrainerSession({ config, ayahs, onEnd }: TrainerSessionProps) {
     [paused, config.strictness]
   );
 
-  const { supported, listening, start, stop, error: speechError } = useSpeech({ lang: "ar-SA", onResult });
+  const { supported, listening, start, stop, requestMic, permission, error: speechError } = useSpeech({ lang: "ar-SA", onResult });
   const micLevel = useMicLevel(listening && !paused);
+  const [hasStarted, setHasStarted] = useState(false);
+  const [requesting, setRequesting] = useState(false);
 
-  // Auto-start on mount
+  const handleBegin = useCallback(async () => {
+    if (requesting) return;
+    setRequesting(true);
+    const ok = await requestMic();
+    setRequesting(false);
+    if (!ok) return;
+    setHasStarted(true);
+    start();
+  }, [requestMic, start, requesting]);
+
+  // Stop the recognizer on unmount (no auto-start — mobile browsers require a user gesture).
   useEffect(() => {
-    if (supported) start();
     return () => stop();
-  }, [supported, start, stop]);
+  }, [stop]);
 
   // Hint policy timer — polled at 100ms (was 250ms) so the cursor / hint cue
   // doesn't lag behind a fast reciter.
   useEffect(() => {
-    if (paused) return;
+    if (paused || !hasStarted) return;
     const id = setInterval(() => {
       const idx = cursorRef.current;
       if (idx >= wordsRef.current.length) return;
@@ -450,9 +461,13 @@ function TrainerSession({ config, ayahs, onEnd }: TrainerSessionProps) {
         <MicIndicator active={listening && !paused} level={micLevel} className="w-full sm:flex-1 sm:min-w-0" />
         <div className="grid grid-cols-4 gap-2 sm:flex sm:items-center sm:gap-2">
           <Button
-            variant={paused ? "emerald" : "glass"}
+            variant={!hasStarted || paused ? "emerald" : "glass"}
             size="default"
             onClick={() => {
+              if (!hasStarted) {
+                handleBegin();
+                return;
+              }
               if (paused) {
                 start();
                 setPaused(false);
@@ -461,11 +476,12 @@ function TrainerSession({ config, ayahs, onEnd }: TrainerSessionProps) {
                 setPaused(true);
               }
             }}
-            aria-label={paused ? "Resume" : "Pause"}
+            disabled={!supported || requesting}
+            aria-label={!hasStarted ? "Begin reciting" : paused ? "Resume" : "Pause"}
             className="w-full sm:w-auto px-2 sm:px-4"
           >
-            {paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-            <span className="hidden sm:inline">{paused ? "Resume" : "Pause"}</span>
+            {!hasStarted ? <Mic className="h-4 w-4" /> : paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+            <span className="hidden sm:inline">{!hasStarted ? (requesting ? "Requesting…" : "Begin") : paused ? "Resume" : "Pause"}</span>
           </Button>
           <Button
             variant="outline"
@@ -525,7 +541,28 @@ function TrainerSession({ config, ayahs, onEnd }: TrainerSessionProps) {
         )}
       </AnimatePresence>
 
-      {speechError && (
+      {!supported && (
+        <div className="rounded-2xl border border-amber-400/25 bg-amber-400/5 px-4 py-3 text-sm text-amber-200">
+          Voice recognition isn&apos;t available in this browser. On iPhone, open this page in Safari (iOS 14.5+); on Android, use Chrome. Otherwise the Hifz tracker still works without a mic.
+        </div>
+      )}
+
+      {supported && !hasStarted && (
+        <div className="rounded-2xl border border-emerald-glow/25 bg-emerald-glow/5 px-4 py-3 text-sm text-emerald-glow/90 flex items-center gap-3">
+          <Mic className="h-4 w-4 shrink-0" />
+          <span>
+            Tap <span className="font-medium">Begin</span> above and allow microphone access to start. On phones the browser will ask for mic permission once — accept, and recitation will begin.
+          </span>
+        </div>
+      )}
+
+      {permission === "denied" && (
+        <div className="rounded-2xl border border-red-400/25 bg-red-400/5 px-4 py-3 text-sm text-red-300">
+          Microphone access was blocked. Tap the lock icon in your browser&apos;s address bar (or your phone&apos;s site settings) and re-enable the mic for this site, then tap Begin again.
+        </div>
+      )}
+
+      {speechError && hasStarted && permission !== "denied" && (
         <p className="text-xs text-amber-300">Speech error: {speechError}. Try toggling pause/resume.</p>
       )}
 
