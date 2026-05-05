@@ -1,6 +1,6 @@
 "use client";
 // recompile-marker
-import { useEffect, useMemo, useState, use } from "react";
+import { useEffect, useMemo, useRef, useState, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
@@ -38,12 +38,13 @@ export default function MushafRoute({ params }: PageProps) {
   const [direction, setDirection] = useState<1 | -1>(1);
   const [qiraaPlayerOpen, setQiraaPlayerOpen] = useState(false);
   const [pageAyahs, setPageAyahs] = useState<PageAyah[]>([]);
-  // When true, the next pageAyahs change will reseat InlineAudio onto the
-  // first ayah of the freshly-loaded page. Used both for audio-driven page
-  // turns (recitation crossed onto the next page) and for manual prev/next
-  // clicks while audio is active — listening always resumes at ayah 1 of
-  // the new page, never mid-page.
-  const [restartAudioOnPage, setRestartAudioOnPage] = useState(false);
+  // Set to true when a page turn while audio is active should reseat
+  // InlineAudio onto the first ayah of the freshly-loaded page. We use a ref
+  // (not state) because the reseat happens *inside* fetchPage's success
+  // callback — at that moment we know `data` is the new page's ayahs, which
+  // avoids a race where a useEffect reading `pageAyahs` would see stale data
+  // from the previous page and seat audio at the wrong ayah.
+  const restartAudioOnPageRef = useRef(false);
 
   const reciterId = usePreferences((s) => s.reciterId);
   const tafsir = usePreferences((s) => s.tafsir);
@@ -58,11 +59,28 @@ export default function MushafRoute({ params }: PageProps) {
     [riwayah]
   );
 
-  // Mirror MushafPage's fetch so the player has the ayah list (cached in lib/api/quran)
+  // Mirror MushafPage's fetch so the player has the ayah list (cached in
+  // lib/api/quran). When restartAudioOnPageRef is set (manual prev/next or
+  // audio-driven page turn), reseat audio onto the first ayah of THIS page
+  // here — inside the callback — so we read fresh ayahs and avoid a race
+  // with a separate effect that'd see stale pageAyahs.
   useEffect(() => {
     let cancel = false;
     fetchPage(pageNumber, "quran-uthmani")
-      .then((data) => !cancel && setPageAyahs(data))
+      .then((data) => {
+        if (cancel) return;
+        setPageAyahs(data);
+        if (restartAudioOnPageRef.current && data.length > 0) {
+          const first = data[0];
+          const surahMeta = SURAHS.find((s) => s.id === first.surah.number);
+          setAudioAyah({
+            surah: first.surah.number,
+            ayah: first.numberInSurah,
+            total: surahMeta?.ayahs ?? 7,
+          });
+          restartAudioOnPageRef.current = false;
+        }
+      })
       .catch(() => !cancel && setPageAyahs([]));
     return () => {
       cancel = true;
@@ -81,21 +99,6 @@ export default function MushafRoute({ params }: PageProps) {
     }
   }, [riwayah, recitersForRiwayah.length]);
 
-  // After a page turn while audio is active, point InlineAudio at the first
-  // ayah of the freshly-loaded page so listening resumes at ayah 1.
-  useEffect(() => {
-    if (!restartAudioOnPage) return;
-    if (pageAyahs.length === 0) return;
-    const first = pageAyahs[0];
-    const surahMeta = SURAHS.find((s) => s.id === first.surah.number);
-    setAudioAyah({
-      surah: first.surah.number,
-      ayah: first.numberInSurah,
-      total: surahMeta?.ayahs ?? 7,
-    });
-    setRestartAudioOnPage(false);
-  }, [restartAudioOnPage, pageAyahs]);
-
   const goPage = (n: number) => {
     if (n < 1 || n > TOTAL_PAGES) return;
     setDirection(n > pageNumber ? 1 : -1);
@@ -107,7 +110,7 @@ export default function MushafRoute({ params }: PageProps) {
   // that shouldn't disturb audio (e.g. landing on a page initially).
   const goPageFollowingAudio = (n: number) => {
     if (n < 1 || n > TOTAL_PAGES) return;
-    if (audioAyah) setRestartAudioOnPage(true);
+    if (audioAyah) restartAudioOnPageRef.current = true;
     goPage(n);
   };
 
@@ -316,11 +319,12 @@ export default function MushafRoute({ params }: PageProps) {
               (p) => p.surah.number === audioAyah.surah && p.numberInSurah === a
             );
             // Audio was on this page and the next ayah moves to the next page:
-            // turn the page and reseat audio at the first ayah of the new page
-            // (NOT the next ayah of the previous surah, which would skip a beat
-            // visually because the page flip waits for the new ayahs to load).
+            // turn the page; the fetchPage success callback will reseat audio
+            // at the first ayah of the freshly-loaded page (no race with stale
+            // pageAyahs because the reseat reads `data` from the resolved
+            // fetch, not the React state).
             if (wasOnThisPage && !nextOnThisPage && pageNumber < TOTAL_PAGES) {
-              setRestartAudioOnPage(true);
+              restartAudioOnPageRef.current = true;
               goPage(pageNumber + 1);
               return;
             }
