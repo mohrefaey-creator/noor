@@ -9,7 +9,6 @@ import { LanguageToggle } from "@/components/common/language-toggle";
 import { useT } from "@/lib/i18n/use-locale";
 
 const NAV = [
-  { href: "/", labelKey: "nav.surahs", icon: BookOpen },
   { href: "/mushaf", labelKey: "nav.mushaf", icon: BookOpen },
   { href: "/listen", labelKey: "nav.listen", icon: Headphones },
   { href: "/hifz", labelKey: "nav.hifz", icon: Sparkles },

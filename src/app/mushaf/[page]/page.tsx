@@ -1,10 +1,9 @@
 "use client";
 // recompile-marker
 import { useEffect, useMemo, useRef, useState, use } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Info, BookOpen, Headphones, Image as ImageIcon, Type } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Info, Headphones, Image as ImageIcon, Type } from "lucide-react";
 import { MushafPage } from "@/components/quran/mushaf-page";
 import { TafsirDrawer } from "@/components/quran/tafsir-drawer";
 import { InlineAudio } from "@/components/quran/inline-audio";
@@ -129,10 +128,6 @@ export default function MushafRoute({ params }: PageProps) {
   return (
     <div>
       <nav className="flex items-center gap-2 text-sm text-ink-400 mb-3">
-        <Link href="/" className="hover:text-ink-200 transition-colors">
-          {t("mushaf.crumb.home")}
-        </Link>
-        <span>/</span>
         <span className="text-ink-200">{t("mushaf.crumb.page", { n: pageNumber })}</span>
       </nav>
 
@@ -282,9 +277,6 @@ export default function MushafRoute({ params }: PageProps) {
         >
           <ArrowRight className="h-4 w-4" /> {t("action.previous")}
         </button>
-        <Link href="/" className="text-sm text-ink-400 hover:text-ink-200">
-          <BookOpen className="inline h-3.5 w-3.5 me-1" /> {t("action.allSurahs")}
-        </Link>
         <button
           onClick={() => goPageFollowingAudio(pageNumber + 1)}
           disabled={pageNumber >= TOTAL_PAGES}
