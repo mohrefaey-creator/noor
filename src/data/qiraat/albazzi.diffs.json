@@ -6,11 +6,27 @@
       {
         "wordIndex": 0,
         "hafs": "مَالِكِ",
-        "variant": "مَالِكِ",
-        "type": "harakah",
+        "variant": "مَلِكِ",
+        "type": "word",
         "note": {
-          "ar": "اتفاق مع حفص",
-          "en": "Al-Bazzi agrees with Hafs on this word."
+          "ar": "قرأ البزّي (عن ابن كثير) «مَلِكِ يَوْمِ ٱلدِّينِ» بحذف الألف، كقراءة نافع وأبي عمرو وابن عامر. وقرأ حفص (وعاصم) والكسائي ويعقوب «مَالِكِ» بإثبات الألف.",
+          "en": "Al-Bazzi (from Ibn Kathīr) reads 'Malik' (King) — without the long alif. Hafs reads 'Mālik' (Owner)."
+        }
+      }
+    ]
+  },
+  {
+    "surah": 2,
+    "ayah": 9,
+    "diffs": [
+      {
+        "wordIndex": 5,
+        "hafs": "يَخْدَعُونَ",
+        "variant": "يُخَٰدِعُونَ",
+        "type": "word",
+        "note": {
+          "ar": "قرأ البزّي عن ابن كثير (وسائر القراء سوى حفص) «وَمَا يُخَٰدِعُونَ» على وزن المفاعلة، وانفرد حفص بـ«وَمَا يَخْدَعُونَ» على وزن فَعَل المجرّد.",
+          "en": "Al-Bazzi from Ibn Kathīr (with all readers other than Hafs) reads 'wa-mā yukhādiʿūn' (Form III). Hafs alone reads 'wa-mā yakhdaʿūn' (Form I)."
         }
       }
     ]

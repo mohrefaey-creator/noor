@@ -17,6 +17,22 @@
   },
   {
     "surah": 2,
+    "ayah": 9,
+    "diffs": [
+      {
+        "wordIndex": 5,
+        "hafs": "يَخْدَعُونَ",
+        "variant": "يُخَٰدِعُونَ",
+        "type": "word",
+        "note": {
+          "ar": "قرأ شعبة (وعامة القراء سوى حفص) «وَمَا يُخَٰدِعُونَ» على وزن المفاعلة موافقًا لما قبله، وانفرد حفص بـ«وَمَا يَخْدَعُونَ» على وزن فَعَل المجرّد.",
+          "en": "Shu'bah (with all readers other than Hafs) reads 'wa-mā yukhādiʿūn' (Form III, matching the earlier verb in the verse). Hafs alone reads 'wa-mā yakhdaʿūn' (Form I)."
+        }
+      }
+    ]
+  },
+  {
+    "surah": 2,
     "ayah": 10,
     "diffs": [
       {
