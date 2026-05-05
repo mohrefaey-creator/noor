@@ -2,6 +2,7 @@
 import { Mic, MicOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/use-locale";
 
 interface MicIndicatorProps {
   active: boolean;
@@ -10,6 +11,7 @@ interface MicIndicatorProps {
 }
 
 export function MicIndicator({ active, level, className }: MicIndicatorProps) {
+  const t = useT();
   return (
     <div className={cn("flex items-center gap-3 px-4 py-2.5 rounded-2xl glass-strong", className)}>
       <div className="relative flex-shrink-0">
@@ -45,8 +47,8 @@ export function MicIndicator({ active, level, className }: MicIndicatorProps) {
           );
         })}
       </div>
-      <p className="text-xs text-ink-400 hidden sm:block min-w-[64px] text-right">
-        {active ? "Listening…" : "Idle"}
+      <p className="text-xs text-ink-400 hidden sm:block min-w-[64px] text-end">
+        {active ? t("mic.listening") : t("mic.idle")}
       </p>
     </div>
   );

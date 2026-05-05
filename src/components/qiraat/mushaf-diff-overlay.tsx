@@ -13,6 +13,7 @@ import {
 import type { RiwayahId } from "@/data/qiraat/metadata";
 import { getReciter } from "@/data/reciters";
 import { usePreferences } from "@/lib/store/preferences";
+import { useT } from "@/lib/i18n/use-locale";
 
 // Audio-only differences (same letters/rasm, different sound). Vowel marks
 // included — the printed word looks the same, just sounds different.
@@ -27,6 +28,7 @@ interface MushafDiffOverlayProps {
 }
 
 export function MushafDiffOverlay({ imgRef, overlays, riwayahName, riwayah, ready }: MushafDiffOverlayProps) {
+  const t = useT();
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
@@ -175,13 +177,13 @@ export function MushafDiffOverlay({ imgRef, overlays, riwayahName, riwayah, read
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-center">
                       <div className="rounded-lg bg-black/[0.04] p-2.5">
-                        <p className="text-[10px] uppercase tracking-wider text-ink-500">Hafs</p>
+                        <p className="text-[10px] uppercase tracking-wider text-ink-500">{t("overlay.hafs")}</p>
                         <p dir="rtl" lang="ar" className="font-arabic text-xl mt-1 text-ink-100">
                           {o.hafs}
                         </p>
                       </div>
                       <div className={cn("rounded-lg p-2.5 border", audible ? "bg-emerald-glow/10 border-emerald-glow/25" : "bg-red-400/10 border-red-400/25")}>
-                        <p className={cn("text-[10px] uppercase tracking-wider", audible ? "text-emerald-glow" : "text-red-500")}>{audible ? "Audio" : "Variant"}</p>
+                        <p className={cn("text-[10px] uppercase tracking-wider", audible ? "text-emerald-glow" : "text-red-500")}>{audible ? t("overlay.audio") : t("overlay.variant")}</p>
                         <p dir="rtl" lang="ar" className={cn("font-arabic text-xl mt-1", audible ? "text-emerald-glow" : "text-red-500")}>
                           {o.variant}
                         </p>
@@ -222,9 +224,9 @@ export function MushafDiffOverlay({ imgRef, overlays, riwayahName, riwayah, read
                         disabled={!variantAyahReciter || !variantAyahReciter.ayahLevel}
                         disabledHint={
                           !variantAyahReciter
-                            ? "No audio yet"
+                            ? t("overlay.noAudioYet")
                             : !variantAyahReciter.ayahLevel
-                            ? "Use main Listen player"
+                            ? t("overlay.useMainPlayer")
                             : undefined
                         }
                         tone="red"
@@ -240,7 +242,7 @@ export function MushafDiffOverlay({ imgRef, overlays, riwayahName, riwayah, read
                     </div>
 
                     <p className="text-[10px] text-ink-500 mt-2.5">
-                      Surah {o.surah} Â· Ayah {o.ayah}
+                      {t("overlay.surahAyah", { s: o.surah, a: o.ayah })}
                     </p>
                   </motion.div>
                 </>
@@ -272,6 +274,7 @@ function PlayCompareButton({
   tone,
   onClick,
 }: PlayCompareButtonProps) {
+  const t = useT();
   const baseColor =
     tone === "red"
       ? "bg-red-400/[0.10] border-red-400/30 text-red-200 hover:bg-red-400/[0.18]"
@@ -284,7 +287,7 @@ function PlayCompareButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      title={disabled ? disabledHint : `Play in ${label}`}
+      title={disabled ? disabledHint : t("overlay.playIn", { name: label })}
       className={cn(
         "h-12 px-3 rounded-xl border text-left transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
         playing ? playingColor : baseColor

@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import type { PageAyah } from "@/lib/api/quran";
 import { toArabicDigits } from "@/lib/api/quran";
 import { type RiwayahId, getDiffsForSurah, getRiwayah, type DiffEntry } from "@/data/qiraat/metadata";
+import { computeRuleDiffs, mergeAyahDiffs } from "@/lib/qiraat/rules";
 import { DiffWord } from "@/components/qiraat/diff-word";
 import { Bismillah } from "@/components/common/bismillah";
 
@@ -20,14 +21,28 @@ interface SurahGroup {
 }
 
 // Build a surah → ayah → wordIndex → diff lookup so per-word rendering is O(1).
-function buildDiffIndex(riwayah: RiwayahId, surahsOnPage: number[]) {
+// Combines hand-curated JSON entries with rule-based systematic detections
+// (Warsh madd lengthening etc).
+function buildDiffIndex(riwayah: RiwayahId, ayahs: PageAyah[]) {
   const out = new Map<string, DiffEntry["diffs"][number]>();
   if (riwayah === "hafs") return out;
+
+  // Group JSON diffs by ayah for fast lookup during merge.
+  const surahsOnPage = Array.from(new Set(ayahs.map((a) => a.surah.number)));
+  const jsonByAyah = new Map<string, DiffEntry["diffs"]>();
   for (const surah of surahsOnPage) {
     for (const entry of getDiffsForSurah(riwayah, surah)) {
-      for (const d of entry.diffs) {
-        out.set(`${entry.surah}:${entry.ayah}:${d.wordIndex}`, d);
-      }
+      jsonByAyah.set(`${entry.surah}:${entry.ayah}`, entry.diffs);
+    }
+  }
+
+  for (const a of ayahs) {
+    const tokens = a.text.split(/\s+/);
+    const json = jsonByAyah.get(`${a.surah.number}:${a.numberInSurah}`);
+    const rules = computeRuleDiffs(riwayah, tokens);
+    const merged = mergeAyahDiffs(json, rules);
+    for (const d of merged) {
+      out.set(`${a.surah.number}:${a.numberInSurah}:${d.wordIndex}`, d);
     }
   }
   return out;
@@ -52,13 +67,9 @@ export function MushafTextView({ page, ayahs, riwayah }: MushafTextViewProps) {
     return out;
   }, [ayahs]);
 
-  const surahsOnPage = useMemo(
-    () => Array.from(new Set(ayahs.map((a) => a.surah.number))),
-    [ayahs]
-  );
   const diffIndex = useMemo(
-    () => buildDiffIndex(riwayah, surahsOnPage),
-    [riwayah, surahsOnPage]
+    () => buildDiffIndex(riwayah, ayahs),
+    [riwayah, ayahs]
   );
   const riwayahName = riwayah !== "hafs" ? getRiwayah(riwayah)?.name ?? "" : "";
 

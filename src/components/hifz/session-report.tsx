@@ -4,6 +4,7 @@ import { CheckCircle2, AlertCircle, SkipForward, Eye, RotateCcw, BookOpen } from
 import type { HifzSession } from "@/lib/store/hifz-store";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { getSurah } from "@/data/surahs";
+import { useT } from "@/lib/i18n/use-locale";
 
 interface SessionReportProps {
   session: HifzSession;
@@ -12,6 +13,7 @@ interface SessionReportProps {
 }
 
 export function SessionReport({ session, onRestart, onClose }: SessionReportProps) {
+  const t = useT();
   const total = session.results.length;
   const correct = session.results.filter((r) => r.status === "correct-first-try").length;
   const hinted = session.results.filter((r) => r.status === "correct-after-hint").length;
@@ -21,7 +23,6 @@ export function SessionReport({ session, onRestart, onClose }: SessionReportProp
 
   const surah = getSurah(session.range.surah);
 
-  // Per-ayah accuracy
   const perAyah = new Map<number, { correct: number; total: number }>();
   for (const r of session.results) {
     const cur = perAyah.get(r.ayah) ?? { correct: 0, total: 0 };
@@ -40,29 +41,37 @@ export function SessionReport({ session, onRestart, onClose }: SessionReportProp
       <div className="glass-strong rounded-3xl p-8 text-center relative overflow-hidden">
         <div className="absolute -top-32 left-1/2 -translate-x-1/2 h-64 w-64 rounded-full bg-emerald-glow/15 blur-3xl" />
         <div className="relative">
-          <p className="text-xs uppercase tracking-[0.2em] text-emerald-glow/80 mb-2">Session Complete</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-emerald-glow/80 mb-2">
+            {t("report.complete")}
+          </p>
           <p className="font-display text-7xl text-ink-50 tabular-nums">{accuracy}%</p>
-          <p className="text-ink-400 mt-1">accuracy on {surah?.transliteration} {session.range.fromAyah}–{session.range.toAyah}</p>
+          <p className="text-ink-400 mt-1">
+            {t("report.accuracyOn", {
+              surah: surah?.transliteration ?? "",
+              from: session.range.fromAyah,
+              to: session.range.toAyah,
+            })}
+          </p>
           <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-lg mx-auto">
-            <Stat label="First try" value={correct} icon={<CheckCircle2 className="h-3.5 w-3.5 text-emerald-glow" />} />
-            <Stat label="After hint" value={hinted} icon={<AlertCircle className="h-3.5 w-3.5 text-gold-400" />} />
-            <Stat label="Skipped" value={skipped} icon={<SkipForward className="h-3.5 w-3.5 text-ink-400" />} />
-            <Stat label="Revealed" value={revealed} icon={<Eye className="h-3.5 w-3.5 text-ink-400" />} />
+            <Stat label={t("report.firstTry")} value={correct} icon={<CheckCircle2 className="h-3.5 w-3.5 text-emerald-glow" />} />
+            <Stat label={t("report.afterHint")} value={hinted} icon={<AlertCircle className="h-3.5 w-3.5 text-gold-400" />} />
+            <Stat label={t("report.skipped")} value={skipped} icon={<SkipForward className="h-3.5 w-3.5 text-ink-400" />} />
+            <Stat label={t("report.revealed")} value={revealed} icon={<Eye className="h-3.5 w-3.5 text-ink-400" />} />
           </div>
         </div>
       </div>
 
       {struggle.length > 0 && (
         <div className="glass rounded-2xl p-6">
-          <h3 className="font-display text-lg text-ink-50 mb-3">Suggested next session</h3>
-          <p className="text-sm text-ink-300 mb-4">Replay the {struggle.length} ayāt where you struggled most:</p>
+          <h3 className="font-display text-lg text-ink-50 mb-3">{t("report.suggestNext")}</h3>
+          <p className="text-sm text-ink-300 mb-4">{t("report.suggestBody", { n: struggle.length })}</p>
           <div className="flex flex-wrap gap-2">
             {struggle.map((s) => (
               <span
                 key={s.ayah}
                 className="px-3 py-1.5 rounded-full bg-orange-400/10 border border-orange-400/30 text-orange-200 text-sm"
               >
-                Ayah {s.ayah} · {Math.round(s.pct)}%
+                {t("report.struggleAyah", { n: s.ayah, pct: Math.round(s.pct) })}
               </span>
             ))}
           </div>
@@ -71,13 +80,13 @@ export function SessionReport({ session, onRestart, onClose }: SessionReportProp
 
       <div className="flex flex-wrap gap-3">
         <Button variant="emerald" size="lg" onClick={onRestart}>
-          <RotateCcw className="h-4 w-4" /> Train again
+          <RotateCcw className="h-4 w-4" /> {t("action.trainAgain")}
         </Button>
         <Link href={`/surah/${session.range.surah}`} className={buttonVariants({ variant: "glass", size: "lg" })}>
-          <BookOpen className="h-4 w-4" /> Open in reading view
+          <BookOpen className="h-4 w-4" /> {t("action.openInReading")}
         </Link>
         <Button variant="ghost" size="lg" onClick={onClose}>
-          Done
+          {t("action.done")}
         </Button>
       </div>
     </div>

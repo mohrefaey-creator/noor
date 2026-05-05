@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
 import { Popover } from "@/components/ui/popover";
 import type { DiffEntry } from "@/data/qiraat/metadata";
+import { useT } from "@/lib/i18n/use-locale";
 
 interface DiffWordProps {
   word: string;
@@ -8,24 +9,10 @@ interface DiffWordProps {
   riwayahName: string;
 }
 
-const TYPE_LABEL: Record<DiffEntry["diffs"][number]["type"], string> = {
-  harakah: "Vowel change",
-  imalah: "Imālah · sound tilt",
-  idgham: "Idghām · merger",
-  izhar: "Iẓhār · clear pronunciation",
-  hamz: "Hamzah · softened/extended",
-  naql: "Naql · transferred ḥarakah",
-  madd: "Madd · longer elongation",
-  word: "Different word",
-  other: "Other variant",
-};
-
-// Audio differences = same skeleton (rasm), different pronunciation. Includes
-// vowel-mark changes (harakah) — the letters on the page are identical, only
-// the recited sound differs. Word/letter substitutions are the only "red" type.
 const AUDIBLE_TYPES = new Set(["madd", "hamz", "imalah", "naql", "idgham", "izhar", "harakah"]);
 
 export function DiffWord({ word, diff, riwayahName }: DiffWordProps) {
+  const t = useT();
   const audible = AUDIBLE_TYPES.has(diff.type);
   const triggerCls = audible
     ? "text-emerald-glow underline decoration-emerald-glow/45 decoration-2 underline-offset-[6px] cursor-help"
@@ -35,7 +22,8 @@ export function DiffWord({ word, diff, riwayahName }: DiffWordProps) {
     : "rounded-lg bg-red-400/10 border border-red-400/25 p-2.5";
   const variantLabelCls = audible ? "text-emerald-glow" : "text-red-500";
   const variantTextCls = audible ? "text-emerald-glow" : "text-red-500";
-  const variantLabel = audible ? "Audio" : "Variant";
+  const variantLabel = audible ? t("diff.audio") : t("diff.variant");
+  const typeLabel = t(`diffType.${diff.type}`);
 
   return (
     <Popover
@@ -43,19 +31,17 @@ export function DiffWord({ word, diff, riwayahName }: DiffWordProps) {
       className="min-w-[260px] max-w-xs"
       trigger={<span className={triggerCls}>{word}</span>}
     >
-      <div className="space-y-2 text-left">
+      <div className="space-y-2 text-start">
         <div className="flex items-center justify-between gap-3">
-          <span className="text-[10px] uppercase tracking-wider text-ink-500">{TYPE_LABEL[diff.type]}</span>
+          <span className="text-[10px] uppercase tracking-wider text-ink-500">{typeLabel}</span>
           <span className="text-[10px] text-gold-500">{riwayahName}</span>
         </div>
         {audible && (
-          <p className="text-[10px] text-emerald-glow leading-snug">
-            Heard in recitation — same letters on the page, different sound or length.
-          </p>
+          <p className="text-[10px] text-emerald-glow leading-snug">{t("diff.audibleHint")}</p>
         )}
         <div className="grid grid-cols-2 gap-2 text-center">
           <div className="rounded-lg bg-black/[0.04] border border-black/[0.06] p-2.5">
-            <p className="text-[10px] uppercase tracking-wider text-ink-500">Hafs</p>
+            <p className="text-[10px] uppercase tracking-wider text-ink-500">{t("diff.hafs")}</p>
             <p dir="rtl" lang="ar" className="font-arabic text-xl mt-1 text-ink-100">{diff.hafs}</p>
           </div>
           <div className={variantBoxCls}>

@@ -1,5 +1,6 @@
 "use client";
 import { Volume2, Wind, Repeat, Waves, ArrowLeftRight } from "lucide-react";
+import { useT } from "@/lib/i18n/use-locale";
 
 type MaddRow = {
   id: string;
@@ -87,30 +88,25 @@ const OTHER_AUDIBLE = [
 ];
 
 export function MaddComparison() {
+  const t = useT();
   return (
     <div className="space-y-5">
       <div className="glass-strong rounded-3xl p-7 md:p-9 relative overflow-hidden">
-        <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-emerald-glow/10 blur-3xl" />
+        <div className="absolute -top-24 -end-24 h-56 w-56 rounded-full bg-emerald-glow/10 blur-3xl" />
         <div className="relative max-w-2xl">
           <div className="inline-flex items-center gap-2 text-emerald-glow mb-3">
             <ArrowLeftRight className="h-4 w-4" />
-            <span className="text-xs uppercase tracking-[0.18em]">Audible differences</span>
+            <span className="text-xs uppercase tracking-[0.18em]">{t("madd.section.audible")}</span>
           </div>
-          <h2 className="font-display text-2xl md:text-3xl text-ink-50 mb-3">
-            What you hear that the page can&apos;t show
-          </h2>
+          <h2 className="font-display text-2xl md:text-3xl text-ink-50 mb-3">{t("madd.heading")}</h2>
           <p className="text-ink-300 leading-relaxed">
-            The biggest differences between <span className="text-gold-400 font-medium">Ḥafṣ</span> and{" "}
-            <span className="text-gold-400 font-medium">Warsh</span> are not changes to the written word —
-            they are changes to <em>how long</em> a letter is held. These are called{" "}
-            <span dir="rtl" lang="ar" className="font-arabic">المدود</span> (al-mudūd, &quot;the elongations&quot;).
-            One <em>ḥarakah</em> is the duration of one short vowel; a <em>madd</em> stretches a long vowel
-            across multiple ḥarakāt.
+            {t("madd.body1Pre")}
+            <span className="text-gold-400 font-medium">Ḥafṣ</span>
+            {t("madd.body1Mid")}
+            <span className="text-gold-400 font-medium">Warsh</span>
+            {t("madd.body1Post")}
           </p>
-          <p className="text-ink-400 text-sm mt-3 leading-relaxed">
-            The mushaf shows the same letters in both readings, but a Warsh recitation of the same page
-            takes noticeably longer than a Hafs one — that&apos;s madd at work.
-          </p>
+          <p className="text-ink-400 text-sm mt-3 leading-relaxed">{t("madd.body2")}</p>
         </div>
       </div>
 
@@ -147,7 +143,7 @@ export function MaddComparison() {
               </div>
             </div>
             <div className="pt-1">
-              <p className="text-[10px] uppercase tracking-wider text-ink-500 mb-2">Examples</p>
+              <p className="text-[10px] uppercase tracking-wider text-ink-500 mb-2">{t("madd.examples")}</p>
               <div className="flex flex-wrap gap-1.5">
                 {m.examples.map((ex) => (
                   <span
@@ -168,7 +164,7 @@ export function MaddComparison() {
       </div>
 
       <div className="glass rounded-3xl p-6 md:p-7">
-        <h3 className="font-display text-xl text-ink-50 mb-4">Other audible features</h3>
+        <h3 className="font-display text-xl text-ink-50 mb-4">{t("madd.other")}</h3>
         <div className="grid sm:grid-cols-2 gap-4">
           {OTHER_AUDIBLE.map((o) => (
             <div key={o.title.en} className="rounded-2xl bg-black/[0.03] border border-black/[0.05] p-4">
@@ -182,11 +178,7 @@ export function MaddComparison() {
             </div>
           ))}
         </div>
-        <p className="text-xs text-ink-500 mt-5 leading-relaxed">
-          Standard timings shown are for the most common ṭarīq taught in tajwīd lessons (Warsh from
-          ṭarīq al-Azraq, Hafs from ṭarīq ash-Shāṭibiyyah). Other ṭuruq permit additional values; consult
-          a qualified teacher (sanad) for specifics.
-        </p>
+        <p className="text-xs text-ink-500 mt-5 leading-relaxed">{t("madd.footer")}</p>
       </div>
     </div>
   );

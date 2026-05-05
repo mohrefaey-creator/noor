@@ -5,6 +5,7 @@ import { X, BookOpen } from "lucide-react";
 import { fetchTafsir, type TafsirEdition, TAFSIR_OPTIONS } from "@/lib/api/tafsir";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
+import { useT } from "@/lib/i18n/use-locale";
 
 interface TafsirDrawerProps {
   open: boolean;
@@ -15,6 +16,7 @@ interface TafsirDrawerProps {
 }
 
 export function TafsirDrawer({ open, surah, ayah, initialEdition, onClose }: TafsirDrawerProps) {
+  const t = useT();
   const [edition, setEdition] = useState<TafsirEdition>(initialEdition);
   const [text, setText] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -28,7 +30,7 @@ export function TafsirDrawer({ open, surah, ayah, initialEdition, onClose }: Taf
     setText(null);
     fetchTafsir(edition, surah, ayah).then((entry) => {
       if (cancel) return;
-      setText(entry?.text ?? "Tafsir not available for this ayah.");
+      setText(entry?.text ?? t("tafsir.unavailable"));
       setLoading(false);
     });
     return () => {
@@ -60,13 +62,13 @@ export function TafsirDrawer({ open, surah, ayah, initialEdition, onClose }: Taf
               <div className="flex items-center gap-2">
                 <BookOpen className="h-4 w-4 text-gold-400" />
                 <h3 className="font-display text-lg text-ink-50">
-                  Tafsir <span className="text-ink-400 text-sm">{surah}:{ayah}</span>
+                  {t("tafsir.title")} <span className="text-ink-400 text-sm">{surah}:{ayah}</span>
                 </h3>
               </div>
               <button
                 onClick={onClose}
                 className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-ink-300 hover:bg-black/[0.06]"
-                aria-label="Close"
+                aria-label={t("action.close")}
               >
                 <X className="h-4 w-4" />
               </button>

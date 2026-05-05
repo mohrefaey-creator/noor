@@ -2,6 +2,7 @@
 import Link from "next/link";
 import type { SurahMeta } from "@/data/surahs";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/use-locale";
 
 interface SurahCardProps {
   surah: SurahMeta;
@@ -10,6 +11,7 @@ interface SurahCardProps {
 }
 
 export function SurahCard({ surah, memorizedAyahs = 0 }: SurahCardProps) {
+  const t = useT();
   const pct = Math.min(100, Math.round((memorizedAyahs / surah.ayahs) * 100));
   return (
     <div>
@@ -59,9 +61,9 @@ export function SurahCard({ surah, memorizedAyahs = 0 }: SurahCardProps) {
                   surah.type === "meccan" ? "bg-amber-400/10 text-amber-300" : "bg-emerald-glow/15 text-emerald-glow"
                 )}
               >
-                {surah.type}
+                {surah.type === "meccan" ? t("surah.type.meccan") : t("surah.type.medinan")}
               </span>
-              <span>{surah.ayahs} ayāt</span>
+              <span>{t("surah.ayahs", { n: surah.ayahs })}</span>
             </div>
 
             {pct > 0 && (

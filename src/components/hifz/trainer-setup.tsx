@@ -5,6 +5,7 @@ import { SURAHS } from "@/data/surahs";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/use-locale";
 
 export interface TrainerConfig {
   surahId: number;
@@ -21,6 +22,7 @@ interface TrainerSetupProps {
 }
 
 export function TrainerSetup({ initial, onStart }: TrainerSetupProps) {
+  const t = useT();
   const [surahId, setSurahId] = useState(initial?.surahId ?? 1);
   const surah = SURAHS.find((s) => s.id === surahId)!;
   const [from, setFrom] = useState(Math.max(1, initial?.fromAyah ?? 1));
@@ -39,20 +41,24 @@ export function TrainerSetup({ initial, onStart }: TrainerSetupProps) {
   return (
     <div className="space-y-6">
       <div className="glass-strong rounded-3xl p-6 md:p-8 relative overflow-hidden">
-        <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-emerald-glow/15 blur-3xl" />
+        <div className="absolute -top-24 -end-24 h-56 w-56 rounded-full bg-emerald-glow/15 blur-3xl" />
         <div className="relative grid md:grid-cols-2 gap-6">
           <div>
-            <label className="text-xs uppercase tracking-wider text-ink-400 mb-2 block">Surah</label>
+            <label className="text-xs uppercase tracking-wider text-ink-400 mb-2 block">
+              {t("trainer.surah")}
+            </label>
             <Select
               value={String(surahId)}
               onChange={(v) => onSurahChange(Number(v))}
               options={SURAHS.map((s) => ({ value: String(s.id), label: `${s.id}. ${s.transliteration}` }))}
               className="w-full"
-              ariaLabel="Surah"
+              ariaLabel={t("trainer.surahAria")}
             />
           </div>
           <div>
-            <label className="text-xs uppercase tracking-wider text-ink-400 mb-2 block">Ayah range</label>
+            <label className="text-xs uppercase tracking-wider text-ink-400 mb-2 block">
+              {t("trainer.ayahRange")}
+            </label>
             <div className="flex items-center gap-2">
               <input
                 type="number"
@@ -72,62 +78,65 @@ export function TrainerSetup({ initial, onStart }: TrainerSetupProps) {
                 className="h-10 w-full rounded-xl border border-white/10 bg-black/[0.03] px-3 text-sm text-ink-50"
               />
             </div>
-            <p className="text-[11px] text-ink-500 mt-1">{surah.ayahs} ayāt available</p>
+            <p className="text-[11px] text-ink-500 mt-1">{t("trainer.ayahsAvailable", { n: surah.ayahs })}</p>
           </div>
         </div>
       </div>
 
       <div className="glass rounded-2xl p-6">
-        <h3 className="text-xs uppercase tracking-wider text-ink-400 mb-3">Hiding style</h3>
+        <h3 className="text-xs uppercase tracking-wider text-ink-400 mb-3">{t("trainer.hidingStyle")}</h3>
         <div className="grid sm:grid-cols-3 gap-3">
           <ChoiceCard
             active={hideMode === "blur"}
             onClick={() => setHideMode("blur")}
             icon={<Eye className="h-4 w-4" />}
-            title="Blur"
-            subtitle="Easier · words visible but heavily blurred"
+            title={t("trainer.hide.blur")}
+            subtitle={t("trainer.hide.blur.sub")}
           />
           <ChoiceCard
             active={hideMode === "dashes"}
             onClick={() => setHideMode("dashes")}
             icon={<EyeOff className="h-4 w-4" />}
-            title="Dashes"
-            subtitle="Medium · placeholders sized like real words"
+            title={t("trainer.hide.dashes")}
+            subtitle={t("trainer.hide.dashes.sub")}
           />
           <ChoiceCard
             active={hideMode === "boxes"}
             onClick={() => setHideMode("boxes")}
             icon={<EyeOff className="h-4 w-4" />}
-            title="Boxes"
-            subtitle="Hardest · pure recall"
+            title={t("trainer.hide.boxes")}
+            subtitle={t("trainer.hide.boxes.sub")}
           />
         </div>
       </div>
 
       <div className="glass rounded-2xl p-6">
-        <h3 className="text-xs uppercase tracking-wider text-ink-400 mb-3">Strictness</h3>
+        <h3 className="text-xs uppercase tracking-wider text-ink-400 mb-3">{t("trainer.strictness")}</h3>
         <div className="grid sm:grid-cols-2 gap-3">
           <ChoiceCard
             active={strictness === "lenient"}
             onClick={() => setStrictness("lenient")}
             icon={<Unlock className="h-4 w-4" />}
-            title="Lenient"
-            subtitle="Accepts close pronunciations"
+            title={t("trainer.strictness.lenient")}
+            subtitle={t("trainer.strictness.lenient.sub")}
           />
           <ChoiceCard
             active={strictness === "strict"}
             onClick={() => setStrictness("strict")}
             icon={<Lock className="h-4 w-4" />}
-            title="Strict"
-            subtitle="Requires near-exact match"
+            title={t("trainer.strictness.strict")}
+            subtitle={t("trainer.strictness.strict.sub")}
           />
         </div>
       </div>
 
       <div className="glass rounded-2xl p-6">
-        <h3 className="text-xs uppercase tracking-wider text-ink-400 mb-3">Hint policy</h3>
+        <h3 className="text-xs uppercase tracking-wider text-ink-400 mb-3">{t("trainer.hint.title")}</h3>
         <p className="text-sm text-ink-300 mb-3">
-          Show first letter after <span className="text-gold-400 font-medium tabular-nums">{hintAfter}s</span> of silence on a word, full hint after <span className="text-gold-400 font-medium">{hintAfter * 2}s</span>.
+          {t("trainer.hint.desc", {
+            a: t("trainer.hint.seconds", { n: hintAfter }),
+            b: t("trainer.hint.seconds", { n: hintAfter * 2 }),
+          })}
         </p>
         <input
           type="range"
@@ -139,8 +148,8 @@ export function TrainerSetup({ initial, onStart }: TrainerSetupProps) {
           className="w-full"
         />
         <div className="flex justify-between text-[10px] text-ink-500 mt-1">
-          <span>3s</span>
-          <span>15s</span>
+          <span>{t("trainer.hint.seconds", { n: 3 })}</span>
+          <span>{t("trainer.hint.seconds", { n: 15 })}</span>
         </div>
       </div>
 
@@ -151,7 +160,7 @@ export function TrainerSetup({ initial, onStart }: TrainerSetupProps) {
           className="w-full text-lg shadow-[0_8px_28px_-6px_rgba(16,185,129,0.55)] ring-1 ring-emerald-glow/40"
           onClick={() => onStart({ surahId, fromAyah: from, toAyah: to, hideMode, strictness, hintAfterSeconds: hintAfter })}
         >
-          <Mic className="h-5 w-5" /> Start Reciting
+          <Mic className="h-5 w-5" /> {t("action.startReciting")}
         </Button>
       </div>
     </div>
@@ -175,7 +184,7 @@ function ChoiceCard({
     <button
       onClick={onClick}
       className={cn(
-        "text-left p-4 rounded-xl border transition-all",
+        "text-start p-4 rounded-xl border transition-all",
         active
           ? "border-emerald-glow/40 bg-emerald-glow/10 shadow-[0_0_0_1px_rgba(16, 185, 129,0.25)]"
           : "border-black/[0.08] hover:border-black/[0.15] bg-black/[0.02]"

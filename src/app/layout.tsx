@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/nav/sidebar";
 import { MobileNav } from "@/components/nav/mobile-nav";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Toaster } from "@/components/ui/toaster";
+import { LocaleSync } from "@/lib/i18n/use-locale";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const amiri = Amiri_Quran({ subsets: ["arabic"], weight: ["400"], variable: "--font-amiri", display: "swap" });
@@ -23,10 +24,11 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-// Inline script that runs synchronously before paint to apply the persisted theme
-// from localStorage — prevents a light/dark flash on first load.
-// Default is dark (matches the original brand design); user can toggle to light.
-const themeBootstrap = `
+// Inline script that runs synchronously before paint to apply persisted theme
+// AND locale (lang/dir on <html>) from localStorage — prevents both a light/dark
+// flash and a layout flash from RTL ↔ LTR on first load. Default theme is dark;
+// default locale is Arabic.
+const bootstrap = `
 (function () {
   try {
     var raw = localStorage.getItem('noor-prefs');
@@ -40,23 +42,38 @@ const themeBootstrap = `
   } catch (_) {
     document.documentElement.classList.add('dark');
   }
+  try {
+    var rawL = localStorage.getItem('noor-locale');
+    var locale = 'ar';
+    if (rawL) {
+      var parsedL = JSON.parse(rawL);
+      if (parsedL && parsedL.state && parsedL.state.locale) locale = parsedL.state.locale;
+    }
+    document.documentElement.setAttribute('lang', locale);
+    document.documentElement.setAttribute('dir', locale === 'ar' ? 'rtl' : 'ltr');
+  } catch (_) {
+    document.documentElement.setAttribute('lang', 'ar');
+    document.documentElement.setAttribute('dir', 'rtl');
+  }
 })();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
-      lang="en"
+      lang="ar"
+      dir="rtl"
       suppressHydrationWarning
       className={`${inter.variable} ${amiri.variable} ${cormorant.variable}`}
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
+        <script dangerouslySetInnerHTML={{ __html: bootstrap }} />
       </head>
       <body className="min-h-screen overflow-x-hidden">
+        <LocaleSync />
         <div className="pointer-events-none fixed inset-0 -z-10 bg-noise opacity-[0.04] mix-blend-overlay" />
         <div className="flex min-h-screen">
           <Sidebar />
-          <main className="flex-1 lg:ml-64 pb-24 lg:pb-12">
+          <main className="flex-1 lg:ms-64 pb-24 lg:pb-12">
             <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-6 lg:pt-10">{children}</div>
           </main>
         </div>

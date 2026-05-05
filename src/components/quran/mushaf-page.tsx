@@ -13,6 +13,7 @@ import { MushafDiffOverlay } from "@/components/qiraat/mushaf-diff-overlay";
 import { MushafTextView } from "@/components/quran/mushaf-text-view";
 import { getPageOverlays } from "@/data/qiraat/word-coords";
 import { getRiwayah } from "@/data/qiraat/metadata";
+import { useT } from "@/lib/i18n/use-locale";
 
 interface MushafPageProps {
   page: number;
@@ -35,6 +36,7 @@ function buildSrcSet(page: number) {
 
 
 export function MushafPage({ page, onAyahPlay, onTafsir, playingAyah }: MushafPageProps) {
+  const t = useT();
   const [ayahs, setAyahs] = useState<PageAyah[] | null>(null);
   const [imgLoaded, setImgLoaded] = useState(false);
   const [zoom, setZoom] = useState(false);
@@ -153,20 +155,20 @@ export function MushafPage({ page, onAyahPlay, onTafsir, playingAyah }: MushafPa
           )}
           {imgError && (
             <div className="aspect-[3/4.5] w-full flex flex-col items-center justify-center text-center text-ink-300 p-8 bg-black/[0.02] gap-3">
-              <p>Could not load this page image.</p>
-              <p className="text-xs text-ink-500">The mushaf image CDN may be slow or missing this page.</p>
+              <p>{t("mushaf.audio.unavailableTitle")}</p>
+              <p className="text-xs text-ink-500">{t("mushaf.audio.unavailableHint")}</p>
               <button
                 onClick={() => setMushafView("written")}
                 className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gold-400/15 border border-gold-400/30 text-gold-300 text-sm hover:bg-gold-400/25"
               >
-                Switch to written text view
+                {t("action.switchToWritten")}
               </button>
             </div>
           )}
           {/* Riwāyah count badge */}
           {imgLoaded && overlays.length > 0 && (
-            <span className="absolute top-3 right-3 z-20 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-400/15 border border-red-400/35 backdrop-blur text-[10px] uppercase tracking-wider text-red-200">
-              {overlays.length} variant{overlays.length === 1 ? "" : "s"}
+            <span className="absolute top-3 end-3 z-20 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-400/15 border border-red-400/35 backdrop-blur text-[10px] uppercase tracking-wider text-red-200">
+              {overlays.length} {overlays.length === 1 ? t("mushaf.variants") : t("mushaf.variantsPlural")}
             </span>
           )}
           {/* Page number badge bottom-center */}
@@ -179,8 +181,8 @@ export function MushafPage({ page, onAyahPlay, onTafsir, playingAyah }: MushafPa
           {imgLoaded && (
             <button
               onClick={() => setZoom(true)}
-              aria-label="Zoom"
-              className="absolute top-3 left-3 z-30 h-9 w-9 inline-flex items-center justify-center rounded-xl bg-ink-950/60 backdrop-blur text-ink-100 hover:bg-ink-950/80 transition-colors"
+              aria-label={t("mushaf.zoom")}
+              className="absolute top-3 start-3 z-30 h-9 w-9 inline-flex items-center justify-center rounded-xl bg-ink-950/60 backdrop-blur text-ink-100 hover:bg-ink-950/80 transition-colors"
             >
               <ZoomIn className="h-4 w-4" />
             </button>
@@ -196,7 +198,7 @@ export function MushafPage({ page, onAyahPlay, onTafsir, playingAyah }: MushafPa
             <div key={g.surahNumber} className="glass rounded-2xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs uppercase tracking-wider text-gold-400/80">
-                  {g.surahNameEnglish} <span className="text-ink-500 ml-1.5">·  Surah {g.surahNumber}</span>
+                  {g.surahNameEnglish} <span className="text-ink-500 ms-1.5">· {t("mushaf.surahHeader", { n: g.surahNumber })}</span>
                 </p>
                 <p dir="rtl" lang="ar" className="font-arabic text-lg gold-text">
                   {g.surahNameArabic}
@@ -221,10 +223,10 @@ export function MushafPage({ page, onAyahPlay, onTafsir, playingAyah }: MushafPa
                       onMemorize={() => {
                         if (memorized) {
                           unmarkMemorized(a.surah.number, a.numberInSurah);
-                          toast(`Unmarked ${a.surah.number}:${a.numberInSurah}`, "info");
+                          toast(t("toast.unmarked", { s: a.surah.number, a: a.numberInSurah }), "info");
                         } else {
                           markMemorized(a.surah.number, a.numberInSurah);
-                          toast(`Memorized ${a.surah.number}:${a.numberInSurah} ✓`, "success");
+                          toast(t("toast.memorized", { s: a.surah.number, a: a.numberInSurah }), "success");
                         }
                       }}
                       onBookmark={() => toggleBookmark(a.surah.number, a.numberInSurah)}
@@ -297,7 +299,7 @@ function AyahChip({ ayahNumber, isPlaying, memorized, bookmarked, onPlay, onMemo
         <span dir="rtl" lang="ar" className="font-arabic">
           {toArabicDigits(ayahNumber)}
         </span>
-        <span className="text-[10px] text-ink-400 hidden sm:inline">آية {ayahNumber}</span>
+        <span className="text-[10px] text-ink-400 hidden sm:inline">آية {ayahNumber}</span>{/* always Arabic; the "آية" tag is universally understood */}
         {memorized && <CheckCircle2 className="h-3 w-3 text-emerald-glow" />}
         {bookmarked && <BookmarkCheck className="h-3 w-3 text-gold-400" />}
       </button>
@@ -314,38 +316,18 @@ function AyahChip({ ayahNumber, isPlaying, memorized, bookmarked, onPlay, onMemo
             )}
           >
               <div className="glass-strong rounded-xl px-1.5 py-1 flex items-center justify-around sm:justify-start gap-1 shadow-2xl sm:whitespace-nowrap">
-                <ChipAction
-                  icon={<Play className="h-3.5 w-3.5" />}
-                  label="Play"
-                  onClick={() => {
-                    onPlay();
-                    setOpen(false);
-                  }}
-                />
-                <ChipAction
+                <ChipActionT actionKey="action.play" icon={<Play className="h-3.5 w-3.5" />} onClick={() => { onPlay(); setOpen(false); }} />
+                <ChipActionT
+                  actionKey="action.memorize"
                   icon={memorized ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-glow" /> : <Circle className="h-3.5 w-3.5" />}
-                  label="Memorize"
-                  onClick={() => {
-                    onMemorize();
-                    setOpen(false);
-                  }}
+                  onClick={() => { onMemorize(); setOpen(false); }}
                 />
-                <ChipAction
+                <ChipActionT
+                  actionKey="action.bookmark"
                   icon={bookmarked ? <BookmarkCheck className="h-3.5 w-3.5 text-gold-400" /> : <Bookmark className="h-3.5 w-3.5" />}
-                  label="Bookmark"
-                  onClick={() => {
-                    onBookmark();
-                    setOpen(false);
-                  }}
+                  onClick={() => { onBookmark(); setOpen(false); }}
                 />
-                <ChipAction
-                  icon={<BookOpen className="h-3.5 w-3.5" />}
-                  label="Tafsir"
-                  onClick={() => {
-                    onTafsir();
-                    setOpen(false);
-                  }}
-                />
+                <ChipActionT actionKey="action.tafsir" icon={<BookOpen className="h-3.5 w-3.5" />} onClick={() => { onTafsir(); setOpen(false); }} />
               </div>
           </div>
         </>
@@ -354,7 +336,17 @@ function AyahChip({ ayahNumber, isPlaying, memorized, bookmarked, onPlay, onMemo
   );
 }
 
-function ChipAction({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) {
+function ChipActionT({
+  icon,
+  actionKey,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  actionKey: string;
+  onClick: () => void;
+}) {
+  const t = useT();
+  const label = t(actionKey);
   return (
     <button
       onClick={onClick}

@@ -17,6 +17,7 @@ import { usePreferences } from "@/lib/store/preferences";
 import { fetchPage, type PageAyah } from "@/lib/api/quran";
 import { getRiwayah } from "@/data/qiraat/metadata";
 import { getRecitersForRiwayah } from "@/data/qiraat-audio";
+import { useT } from "@/lib/i18n/use-locale";
 
 interface PageProps {
   params: Promise<{ page: string }>;
@@ -29,6 +30,7 @@ export default function MushafRoute({ params }: PageProps) {
   const pageNumber = Number(pageStr);
   if (!Number.isFinite(pageNumber) || pageNumber < 1 || pageNumber > TOTAL_PAGES) notFound();
 
+  const t = useT();
   const router = useRouter();
   const [audioAyah, setAudioAyah] = useState<{ surah: number; ayah: number; total: number } | null>(null);
   const [tafsirAyah, setTafsirAyah] = useState<{ surah: number; ayah: number } | null>(null);
@@ -61,9 +63,6 @@ export default function MushafRoute({ params }: PageProps) {
     };
   }, [pageNumber]);
 
-  // When user picks a non-Hafs Riwāyah that has recitations available, auto-open the
-  // page-level audio player so the current mushaf page starts playing in that reading.
-  // Switching back to Hafs closes it.
   useEffect(() => {
     if (riwayah === "hafs") {
       setQiraaPlayerOpen(false);
@@ -97,26 +96,26 @@ export default function MushafRoute({ params }: PageProps) {
   return (
     <div>
       <nav className="flex items-center gap-2 text-sm text-ink-400 mb-3">
-        <Link href="/" className="hover:text-ink-200 transition-colors">Home</Link>
+        <Link href="/" className="hover:text-ink-200 transition-colors">
+          {t("mushaf.crumb.home")}
+        </Link>
         <span>/</span>
-        <span className="text-ink-200">Mushaf · Page {pageNumber}</span>
+        <span className="text-ink-200">{t("mushaf.crumb.page", { n: pageNumber })}</span>
       </nav>
 
-      {/* Top bar — split into two rows on mobile so each control gets a comfortable target */}
       <header className="mb-4 space-y-2.5">
-        {/* Row 1 — primary navigation: prev / page-of-total / next, full width on mobile */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => goPage(pageNumber - 1)}
             disabled={pageNumber <= 1}
             className="h-11 w-11 flex-shrink-0 inline-flex items-center justify-center rounded-xl glass hover:bg-black/[0.07] disabled:opacity-30"
-            aria-label="Previous page"
+            aria-label={t("mushaf.previousPage")}
           >
             <ChevronRight className="h-5 w-5" />
           </button>
 
           <div className="flex-1 flex items-center justify-center gap-2 glass rounded-xl px-3 h-11 text-sm">
-            <span className="text-ink-400 hidden sm:inline">Page</span>
+            <span className="text-ink-400 hidden sm:inline">{t("mushaf.page")}</span>
             <input
               type="number"
               inputMode="numeric"
@@ -136,13 +135,12 @@ export default function MushafRoute({ params }: PageProps) {
             onClick={() => goPage(pageNumber + 1)}
             disabled={pageNumber >= TOTAL_PAGES}
             className="h-11 w-11 flex-shrink-0 inline-flex items-center justify-center rounded-xl glass hover:bg-black/[0.07] disabled:opacity-30"
-            aria-label="Next page"
+            aria-label={t("mushaf.nextPage")}
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Row 2 — secondary controls: jump-to-surah, qira'at, info */}
         <div className="flex items-center gap-2 flex-wrap">
           <Select
             value=""
@@ -151,16 +149,15 @@ export default function MushafRoute({ params }: PageProps) {
               if (surah) goPage(surah.page);
             }}
             options={[
-              { value: "", label: "Jump to surah…" },
+              { value: "", label: t("mushaf.jumpToSurah") },
               ...SURAHS.map((s) => ({ value: String(s.id), label: `${s.id}. ${s.transliteration}` })),
             ]}
-            ariaLabel="Jump to surah"
+            ariaLabel={t("mushaf.jumpToSurahAria")}
             className="flex-1 min-w-[140px]"
           />
           <QiraatPicker value={riwayah} onChange={setRiwayah} />
 
-          {/* Scanned vs Written-text view toggle */}
-          <div className="inline-flex items-center rounded-xl glass p-0.5" role="group" aria-label="Page view mode">
+          <div className="inline-flex items-center rounded-xl glass p-0.5" role="group" aria-label={t("mushaf.viewMode")}>
             <button
               type="button"
               onClick={() => setMushafView("scanned")}
@@ -170,10 +167,10 @@ export default function MushafRoute({ params }: PageProps) {
                   ? "bg-gold-400/15 text-gold-300"
                   : "text-ink-300 hover:text-ink-50"
               }`}
-              title="Scanned King Fahd Mushaf"
+              title={t("mushaf.scannedTitle")}
             >
               <ImageIcon className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Scanned</span>
+              <span className="hidden sm:inline">{t("mushaf.scanned")}</span>
             </button>
             <button
               type="button"
@@ -184,10 +181,10 @@ export default function MushafRoute({ params }: PageProps) {
                   ? "bg-gold-400/15 text-gold-300"
                   : "text-ink-300 hover:text-ink-50"
               }`}
-              title="Written Unicode text"
+              title={t("mushaf.writtenTitle")}
             >
               <Type className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Written</span>
+              <span className="hidden sm:inline">{t("mushaf.written")}</span>
             </button>
           </div>
 
@@ -196,51 +193,40 @@ export default function MushafRoute({ params }: PageProps) {
               variant={recitersForRiwayah.length > 0 ? "emerald" : "glass"}
               size="sm"
               onClick={() => setQiraaPlayerOpen((v) => !v)}
-              aria-label={`Listen in ${riwayahMeta?.name ?? "this Qira'ah"}`}
+              aria-label={t("mushaf.listenInQiraah")}
               disabled={recitersForRiwayah.length === 0}
               title={
                 recitersForRiwayah.length === 0
-                  ? "No public recording available for this Qirā'ah yet"
-                  : `Listen in ${riwayahMeta?.name}`
+                  ? t("mushaf.noAudio")
+                  : t("mushaf.listenInQiraah")
               }
             >
               <Headphones className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">
-                {recitersForRiwayah.length === 0 ? "No audio" : "Listen in this Qirā’ah"}
+                {recitersForRiwayah.length === 0 ? t("mushaf.noAudio") : t("mushaf.listenInQiraah")}
               </span>
-              <span className="sm:hidden">Listen</span>
+              <span className="sm:hidden">{t("mushaf.listenShort")}</span>
             </Button>
           )}
           <Button
             variant="glass"
             size="sm"
             onClick={() => setShowControls((v) => !v)}
-            aria-label="About this view"
+            aria-label={t("mushaf.aboutThisView")}
           >
             <Info className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">{showControls ? "Hide" : "About"}</span>
+            <span className="hidden sm:inline">{showControls ? t("action.hide") : t("action.about")}</span>
           </Button>
         </div>
       </header>
 
       {showControls && (
         <div className="glass rounded-2xl p-4 mb-5 text-sm text-ink-300 space-y-2">
-          <p>
-            Use the <span className="text-gold-400">Scanned</span> view for the official{" "}
-            <span className="text-gold-400">Mushaf al-Madinah</span> from the King Fahd Quran Printing Complex
-            (tap to zoom). Switch to <span className="text-gold-400">Written</span> for selectable Unicode text — useful when
-            the scanned page loads slowly.
-          </p>
-          <p className="text-xs text-ink-400">
-            With a non-Hafs Qirā&apos;ah selected, words are highlighted:
-            <span className="text-red-500 mx-1.5">red</span> = different word/letters,
-            <span className="text-emerald-glow mx-1.5">green</span> = same letters but different sound (madd, hamzah, imālah, vowel-mark, idghām, naql, iẓhār).
-            Tap any highlight for the full note.
-          </p>
+          <p>{t("mushaf.about.scannedExplain")}</p>
+          <p className="text-xs text-ink-400">{t("mushaf.about.diffsExplain")}</p>
         </div>
       )}
 
-      {/* The mushaf page itself */}
       <div className="relative overflow-hidden">
         <div key={pageNumber} className="animate-fade-in">
             <MushafPage
@@ -255,28 +241,26 @@ export default function MushafRoute({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Bottom paging */}
       <footer className="mt-8 flex items-center justify-between gap-3">
         <button
           onClick={() => goPage(pageNumber - 1)}
           disabled={pageNumber <= 1}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl glass hover:bg-black/[0.07] transition-colors text-sm disabled:opacity-30"
         >
-          <ArrowRight className="h-4 w-4" /> Previous
+          <ArrowRight className="h-4 w-4" /> {t("action.previous")}
         </button>
         <Link href="/" className="text-sm text-ink-400 hover:text-ink-200">
-          <BookOpen className="inline h-3.5 w-3.5 mr-1" /> All Surahs
+          <BookOpen className="inline h-3.5 w-3.5 me-1" /> {t("action.allSurahs")}
         </Link>
         <button
           onClick={() => goPage(pageNumber + 1)}
           disabled={pageNumber >= TOTAL_PAGES}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl glass hover:bg-black/[0.07] transition-colors text-sm disabled:opacity-30"
         >
-          Next <ArrowLeft className="h-4 w-4" />
+          {t("action.next")} <ArrowLeft className="h-4 w-4" />
         </button>
       </footer>
 
-      {/* Tafsir + audio */}
       {tafsirAyah && (
         <TafsirDrawer
           open

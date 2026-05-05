@@ -47,7 +47,16 @@ export const usePreferences = create<PrefState>()(
       theme: "dark",
       mushafView: "scanned",
       bookmarks: [],
-      setRiwayah: (r) => set({ riwayah: r }),
+      setRiwayah: (r) => {
+        // Auto-switch to written view when picking a non-Hafs riwāyah so the
+        // red/green word-level diff highlights render reliably (the scanned-image
+        // overlay needs hand-placed word coordinates and only covers a subset).
+        const prev = get().mushafView;
+        set({
+          riwayah: r,
+          mushafView: r !== "hafs" && prev === "scanned" ? "written" : prev,
+        });
+      },
       setTranslation: (e) => set({ translation: e }),
       setTafsir: (t) => set({ tafsir: t }),
       setReciter: (id) => set({ reciterId: id }),

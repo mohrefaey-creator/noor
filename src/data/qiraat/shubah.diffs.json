@@ -9,8 +9,8 @@
         "variant": "مَلِكِ",
         "type": "word",
         "note": {
-          "ar": "قراءة شعبة بحذف الألف",
-          "en": "Shu'bah reads 'Malik' (King) without the long alif."
+          "ar": "قرأ شعبة وغيره من الكوفيين \"مَلِكِ\" بحذف الألف، وقرأ حفص وعاصم وحده بإثباتها \"مَالِكِ\".",
+          "en": "Shu'bah (and most readers) reads 'Malik' (King) without the long alif. Hafs alone preserves 'Mālik' (Owner)."
         }
       }
     ]
@@ -25,8 +25,76 @@
         "variant": "يُكَذِّبُونَ",
         "type": "word",
         "note": {
-          "ar": "قراءة الكوفيين بضم الياء وتشديد الذال",
-          "en": "Shu'bah reads 'yukadhdhibūn' (they deny/falsify) instead of 'yakdhibūn' (they lie)."
+          "ar": "قرأ الكوفيون (شعبة وحمزة والكسائي وخلف) بضم الياء وفتح الكاف وتشديد الذال \"يُكَذِّبُونَ\"، وحفص وحده مع الباقين بفتح الياء وسكون الكاف وكسر الذال \"يَكْذِبُونَ\".",
+          "en": "Shu'bah and the other Kufans read 'yukadhdhibūn' (they deny/falsify). Hafs reads 'yakdhibūn' (they lie)."
+        }
+      }
+    ]
+  },
+  {
+    "surah": 3,
+    "ayah": 37,
+    "diffs": [
+      {
+        "wordIndex": 7,
+        "hafs": "وَكَفَّلَهَا",
+        "variant": "وَكَفَلَهَا",
+        "type": "word",
+        "note": {
+          "ar": "قرأ شعبة وحمزة والكسائي وخلف \"وَكَفَلَهَا\" بفتح الفاء مخففةً، فيكون الفاعل زكريا. وقرأ حفص وغيره بتشديد الفاء \"وَكَفَّلَهَا\" فيكون الفاعل الله تعالى.",
+          "en": "Shu'bah reads 'kafalahā' (without shadda) — Zakariyyā is the subject who took her into care. Hafs reads 'kaffalahā' — Allah caused Zakariyyā to take her into care."
+        }
+      },
+      {
+        "wordIndex": 8,
+        "hafs": "زَكَرِيَّا",
+        "variant": "زَكَرِيَّاءُ",
+        "type": "word",
+        "note": {
+          "ar": "قرأ شعبة \"زَكَرِيَّاءُ\" بالمد والهمز ورفع الهمزة على الفاعلية، تبعاً لقراءته \"كَفَلَهَا\" مخففة. وحفص يقرأ \"زَكَرِيَّا\" بالقصر مفعولاً به.",
+          "en": "Because Shu'bah reads 'kafalahā' (Zakariyyā as subject), the name is recited 'Zakariyyā'u' (with hamza, nominative). Hafs reads 'Zakariyyā' (accusative, no hamza) as the object."
+        }
+      }
+    ]
+  },
+  {
+    "surah": 15,
+    "ayah": 8,
+    "diffs": [
+      {
+        "wordIndex": 1,
+        "hafs": "نُنَزِّلُ",
+        "variant": "تَنَزَّلُ",
+        "type": "word",
+        "note": {
+          "ar": "قرأ شعبة وحمزة والكسائي وخلف \"مَا تَنَزَّلُ\" بالتاء وفتحها مع تشديد النون مفتوحة على البناء للفاعل، والملائكةُ هي الفاعل. وقرأ حفص \"مَا نُنَزِّلُ\" بنون العظمة.",
+          "en": "Shu'bah reads 'mā tanazzalu' — 'the angels do not descend except in truth'. Hafs reads 'mā nunazzilu' — 'We do not send the angels down except in truth'."
+        }
+      },
+      {
+        "wordIndex": 2,
+        "hafs": "ٱلْمَلَٰٓئِكَةَ",
+        "variant": "ٱلْمَلَٰٓئِكَةُ",
+        "type": "harakah",
+        "note": {
+          "ar": "تبعاً لقراءة \"تَنَزَّلُ\" يرفع شعبة \"الملائكةُ\" على الفاعلية. وحفص ينصبها مفعولاً به.",
+          "en": "Following 'tanazzalu', Shu'bah recites 'al-malā'ikatu' (nominative — the angels are the subject). Hafs reads 'al-malā'ikata' (accusative — the angels are the object)."
+        }
+      }
+    ]
+  },
+  {
+    "surah": 33,
+    "ayah": 68,
+    "diffs": [
+      {
+        "wordIndex": 7,
+        "hafs": "كَبِيرًا",
+        "variant": "كَثِيرًا",
+        "type": "word",
+        "note": {
+          "ar": "قرأ شعبة وغيره \"لَعْنًا كَثِيرًا\" بالثاء المثلثة. وانفرد حفص بقراءة \"كَبِيرًا\" بالباء الموحدة.",
+          "en": "Shu'bah reads 'la'nan kathīrā' (a numerous curse). Hafs alone reads 'la'nan kabīrā' (a great curse)."
         }
       }
     ]

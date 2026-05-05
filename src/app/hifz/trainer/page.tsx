@@ -19,6 +19,7 @@ import { useSpeech, useMicLevel } from "@/lib/hifz/useSpeech";
 import { useHifz, type SessionWordResult, type HifzSession } from "@/lib/store/hifz-store";
 import { toast } from "@/components/ui/toaster";
 import { Bismillah } from "@/components/common/bismillah";
+import { useT } from "@/lib/i18n/use-locale";
 
 interface FlatWord {
   surah: number;
@@ -39,6 +40,7 @@ export default function TrainerPage() {
 }
 
 function TrainerPageInner() {
+  const t = useT();
   const sp = useSearchParams();
   const initial = useMemo<Partial<TrainerConfig>>(() => ({
     surahId: Number(sp.get("surah") ?? 1),
@@ -67,7 +69,7 @@ function TrainerPageInner() {
       .catch((e: Error) => {
         setError(e.message);
         setPhase("setup");
-        toast(`Could not load surah: ${e.message}`, "error");
+        toast(t("trainer.couldNotLoad", { msg: e.message }), "error");
       });
   };
 
@@ -91,14 +93,14 @@ function TrainerPageInner() {
     <div>
       <nav className="flex items-center gap-2 text-sm text-ink-400 mb-4">
         <Link href="/hifz" className="hover:text-ink-200 transition-colors flex items-center gap-1">
-          <ArrowLeft className="h-3.5 w-3.5" /> Hifz
+          <ArrowLeft className="h-3.5 w-3.5 rtl:rotate-180" /> {t("trainer.crumb.hifz")}
         </Link>
       </nav>
 
       <PageHeader
-        title="Voice Trainer"
-        arabicTitle="مدرّب الحفظ"
-        description="Recite from memory. Words appear as you say them correctly."
+        title={t("trainer.title")}
+        arabicTitle={t("trainer.arabicTitle")}
+        description={t("trainer.description")}
       />
 
       {phase === "setup" && (
@@ -131,6 +133,7 @@ function TrainerPageInner() {
 }
 
 function SupportNotice() {
+  const t = useT();
   const [supported, setSupported] = useState<boolean | null>(null);
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -140,14 +143,13 @@ function SupportNotice() {
   if (supported) {
     return (
       <div className="mb-6 rounded-2xl border border-emerald-glow/20 bg-emerald-glow/5 px-4 py-3 text-sm text-emerald-glow/90">
-        Microphone-driven recognition is enabled. Best accuracy in Chrome desktop with a headset.
+        {t("trainer.support.ok")}
       </div>
     );
   }
   return (
     <div className="mb-6 rounded-2xl border border-amber-400/25 bg-amber-400/5 px-4 py-3 text-sm text-amber-200">
-      Your browser doesn&apos;t support the Web Speech API. Try Chrome, Edge, or Safari for the voice trainer.
-      You can still use Hifz without voice.
+      {t("trainer.support.unsupported")}
     </div>
   );
 }
@@ -159,6 +161,7 @@ interface TrainerSessionProps {
 }
 
 function TrainerSession({ config, ayahs, onEnd }: TrainerSessionProps) {
+  const t = useT();
   // Build flat word list
   const words = useMemo<FlatWord[]>(() => {
     const out: FlatWord[] = [];
@@ -394,7 +397,7 @@ function TrainerSession({ config, ayahs, onEnd }: TrainerSessionProps) {
       if (v.correct === v.total && v.total > 0) markMemorized(config.surahId, ayah);
     });
     addSession(session);
-    if (reason === "completed") toast("Session complete · Mā shā Allāh", "success");
+    if (reason === "completed") toast(t("trainer.sessionDone"), "success");
     onEnd(session);
   };
 
@@ -479,41 +482,41 @@ function TrainerSession({ config, ayahs, onEnd }: TrainerSessionProps) {
               }
             }}
             disabled={!supported || requesting}
-            aria-label={!hasStarted ? "Begin reciting" : paused ? "Resume" : "Pause"}
+            aria-label={!hasStarted ? t("trainer.beginRecit") : paused ? t("action.resume") : t("action.pause")}
             className="w-full sm:w-auto px-2 sm:px-4"
           >
             {!hasStarted ? <Mic className="h-4 w-4" /> : paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-            <span className="hidden sm:inline">{!hasStarted ? (requesting ? "Requesting…" : "Begin") : paused ? "Resume" : "Pause"}</span>
+            <span className="hidden sm:inline">{!hasStarted ? (requesting ? t("action.requesting") : t("action.begin")) : paused ? t("action.resume") : t("action.pause")}</span>
           </Button>
           <Button
             variant="outline"
             size="default"
             onClick={skip}
-            aria-label="Skip word"
+            aria-label={t("trainer.skipWord")}
             className="w-full sm:w-auto px-2 sm:px-4"
           >
-            <SkipForward className="h-4 w-4" />
-            <span className="hidden sm:inline">Skip</span>
+            <SkipForward className="h-4 w-4 rtl:rotate-180" />
+            <span className="hidden sm:inline">{t("action.skip")}</span>
           </Button>
           <Button
             variant="outline"
             size="default"
             onClick={restartAyah}
-            aria-label="Restart ayah"
+            aria-label={t("trainer.restartAyah")}
             className="w-full sm:w-auto px-2 sm:px-4"
           >
             <RotateCcw className="h-4 w-4" />
-            <span className="hidden sm:inline">Restart</span>
+            <span className="hidden sm:inline">{t("action.restart")}</span>
           </Button>
           <Button
             variant="outline"
             size="default"
             onClick={() => finishSession("stopped")}
-            aria-label="End session"
+            aria-label={t("trainer.endSession")}
             className="w-full sm:w-auto px-2 sm:px-4"
           >
             <Square className="h-4 w-4" />
-            <span className="hidden sm:inline">End</span>
+            <span className="hidden sm:inline">{t("action.end")}</span>
           </Button>
         </div>
       </div>
@@ -538,7 +541,7 @@ function TrainerSession({ config, ayahs, onEnd }: TrainerSessionProps) {
             exit={{ opacity: 0 }}
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gold-400/10 border border-gold-400/30 text-sm text-gold-400"
           >
-            <Eye className="h-3.5 w-3.5" /> Hint: starts with <span dir="rtl" lang="ar" className="font-arabic text-lg">{showHintLetter}</span>
+            <Eye className="h-3.5 w-3.5" /> {t("trainer.hint.label")} <span dir="rtl" lang="ar" className="font-arabic text-lg">{showHintLetter}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -548,7 +551,11 @@ function TrainerSession({ config, ayahs, onEnd }: TrainerSessionProps) {
         <div className="rounded-2xl border border-black/[0.06] bg-black/[0.02] px-4 py-3">
           <div className="flex items-center justify-between gap-3 mb-1">
             <span className="text-[10px] uppercase tracking-wider text-ink-500">
-              {listening ? "Listening" : "Idle"} · {resultCount} {resultCount === 1 ? "phrase" : "phrases"} recognized
+              {listening ? t("trainer.live.listening") : t("trainer.live.idle")} ·{" "}
+              {t("trainer.live.recognized", {
+                n: resultCount,
+                label: resultCount === 1 ? t("trainer.live.phrase") : t("trainer.live.phrases"),
+              })}
             </span>
             {!listening && hasStarted && (
               <button
@@ -556,7 +563,7 @@ function TrainerSession({ config, ayahs, onEnd }: TrainerSessionProps) {
                 onClick={() => start()}
                 className="text-[10px] uppercase tracking-wider text-emerald-glow hover:text-emerald-glow/80"
               >
-                Restart mic
+                {t("action.restartMic")}
               </button>
             )}
           </div>
@@ -567,7 +574,7 @@ function TrainerSession({ config, ayahs, onEnd }: TrainerSessionProps) {
           >
             {interim || (
               <span className="text-ink-500 text-sm font-sans">
-                Recite aloud — the words you say will appear here, then reveal on the page below.
+                {t("trainer.live.placeholder")}
               </span>
             )}
           </p>
@@ -576,27 +583,25 @@ function TrainerSession({ config, ayahs, onEnd }: TrainerSessionProps) {
 
       {!supported && (
         <div className="rounded-2xl border border-amber-400/25 bg-amber-400/5 px-4 py-3 text-sm text-amber-200">
-          Voice recognition isn&apos;t available in this browser. On iPhone, open this page in Safari (iOS 14.5+); on Android, use Chrome. Otherwise the Hifz tracker still works without a mic.
+          {t("trainer.notSupported")}
         </div>
       )}
 
       {supported && !hasStarted && (
         <div className="rounded-2xl border border-emerald-glow/25 bg-emerald-glow/5 px-4 py-3 text-sm text-emerald-glow/90 flex items-center gap-3">
           <Mic className="h-4 w-4 shrink-0" />
-          <span>
-            Tap <span className="font-medium">Begin</span> above and allow microphone access to start. On phones the browser will ask for mic permission once — accept, and recitation will begin.
-          </span>
+          <span>{t("trainer.beginHint")}</span>
         </div>
       )}
 
       {permission === "denied" && (
         <div className="rounded-2xl border border-red-400/25 bg-red-400/5 px-4 py-3 text-sm text-red-300">
-          Microphone access was blocked. Tap the lock icon in your browser&apos;s address bar (or your phone&apos;s site settings) and re-enable the mic for this site, then tap Begin again.
+          {t("trainer.permissionDenied")}
         </div>
       )}
 
       {speechError && hasStarted && permission !== "denied" && (
-        <p className="text-xs text-amber-300">Speech error: {speechError}. Try toggling pause/resume.</p>
+        <p className="text-xs text-amber-300">{t("trainer.speechError", { err: speechError })}</p>
       )}
 
       {/* Hidden ayah view */}
@@ -606,7 +611,7 @@ function TrainerSession({ config, ayahs, onEnd }: TrainerSessionProps) {
           <div className="flex items-center justify-between mb-5">
             <div>
               <p className="text-xs uppercase tracking-wider text-gold-400/80">{surah?.transliteration}</p>
-              <p className="text-ink-400 text-sm">Ayāt {config.fromAyah}–{config.toAyah}</p>
+              <p className="text-ink-400 text-sm">{t("trainer.ayatRange", { from: config.fromAyah, to: config.toAyah })}</p>
             </div>
             <p dir="rtl" lang="ar" className="font-arabic text-3xl gold-text">{surah?.name}</p>
           </div>

@@ -12,6 +12,7 @@ import { fetchSurah, type SurahData } from "@/lib/api/quran";
 import { normalizeArabic } from "@/lib/hifz/normalize";
 import { debounce } from "@/lib/utils";
 import { usePreferences } from "@/lib/store/preferences";
+import { useT } from "@/lib/i18n/use-locale";
 
 interface IndexEntry {
   surah: number;
@@ -22,6 +23,7 @@ interface IndexEntry {
 }
 
 export default function SearchPage() {
+  const t = useT();
   const [q, setQ] = useState("");
   const [scope, setScope] = useState<"surah" | "ayah">("ayah");
   const [lang, setLang] = useState<"any" | "ar" | "en">("any");
@@ -30,13 +32,11 @@ export default function SearchPage() {
   const [loadingPct, setLoadingPct] = useState<number | null>(null);
   const [debouncedQ, setDebouncedQ] = useState("");
 
-  // Debounce
   useEffect(() => {
     const f = debounce((value: unknown) => setDebouncedQ(value as string), 250);
     f(q);
   }, [q]);
 
-  // Build ayah-level index lazily on demand (only when user starts typing in ayah scope)
   useEffect(() => {
     if (scope !== "ayah" || !debouncedQ.trim() || index.length > 0 || loadingPct !== null) return;
     let cancelled = false;
@@ -103,27 +103,27 @@ export default function SearchPage() {
   return (
     <div>
       <PageHeader
-        title="Search"
-        arabicTitle="بحث"
-        description="Find any surah by name or any ayah by Arabic word or translation."
+        title={t("search.title")}
+        arabicTitle={t("search.arabicTitle")}
+        description={t("search.description")}
       />
 
       <div className="flex flex-col md:flex-row md:items-center gap-3 mb-5">
         <div className="relative flex-1">
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
+          <SearchIcon className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="رحمن  ·  mercy  ·  Al-Baqarah  ·  2:255"
-            className="pl-10"
+            placeholder={t("search.placeholder")}
+            className="ps-10"
           />
         </div>
         <Tabs
           value={scope}
           onChange={(v) => setScope(v as "surah" | "ayah")}
           options={[
-            { value: "surah", label: "Surah" },
-            { value: "ayah", label: "Ayah" },
+            { value: "surah", label: t("search.scope.surah") },
+            { value: "ayah", label: t("search.scope.ayah") },
           ]}
         />
         {scope === "ayah" && (
@@ -131,9 +131,9 @@ export default function SearchPage() {
             value={lang}
             onChange={(v) => setLang(v as "any" | "ar" | "en")}
             options={[
-              { value: "any", label: "Both" },
-              { value: "ar", label: "AR" },
-              { value: "en", label: "EN" },
+              { value: "any", label: t("search.lang.both") },
+              { value: "ar", label: t("search.lang.ar") },
+              { value: "en", label: t("search.lang.en") },
             ]}
           />
         )}
@@ -141,9 +141,14 @@ export default function SearchPage() {
 
       {scope === "ayah" && loadingPct !== null && (
         <div className="mb-4">
-          <p className="text-xs text-ink-400 mb-1.5">Building search index… {loadingPct}%</p>
+          <p className="text-xs text-ink-400 mb-1.5">
+            {t("search.building", { n: loadingPct })}
+          </p>
           <div className="h-1 rounded-full bg-black/[0.06] overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-gold-400 to-gold-500" style={{ width: `${loadingPct}%` }} />
+            <div
+              className="h-full bg-gradient-to-r from-gold-400 to-gold-500"
+              style={{ width: `${loadingPct}%` }}
+            />
           </div>
         </div>
       )}
@@ -151,13 +156,13 @@ export default function SearchPage() {
       {!debouncedQ.trim() && (
         <div className="glass rounded-2xl p-8 text-center">
           <SearchIcon className="h-8 w-8 text-gold-400 mx-auto mb-3" />
-          <p className="text-ink-200">Search across 6,236 ayāt and 114 surah names.</p>
-          <p className="text-xs text-ink-400 mt-1">Arabic search ignores tashkeel and alif variants automatically.</p>
+          <p className="text-ink-200">{t("search.empty.title")}</p>
+          <p className="text-xs text-ink-400 mt-1">{t("search.empty.hint")}</p>
         </div>
       )}
 
       {results && results.length === 0 && debouncedQ && loadingPct === null && (
-        <p className="text-center text-ink-400 py-10">No matches.</p>
+        <p className="text-center text-ink-400 py-10">{t("search.noMatches")}</p>
       )}
 
       {results && results.length > 0 && (
@@ -173,9 +178,13 @@ export default function SearchPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-display text-lg text-ink-50">{r.surah.transliteration}</p>
-                      <p className="text-xs text-ink-400">{r.surah.english} · {r.surah.ayahs} ayāt</p>
+                      <p className="text-xs text-ink-400">
+                        {t("search.surahMeta", { english: r.surah.english, n: r.surah.ayahs })}
+                      </p>
                     </div>
-                    <span dir="rtl" lang="ar" className="font-arabic text-2xl gold-text">{r.surah.name}</span>
+                    <span dir="rtl" lang="ar" className="font-arabic text-2xl gold-text">
+                      {r.surah.name}
+                    </span>
                   </div>
                 </Link>
               );
@@ -190,7 +199,7 @@ export default function SearchPage() {
                 <div className="flex items-center gap-2 mb-2 text-xs">
                   <span className="font-medium text-gold-400">{surah?.transliteration}</span>
                   <span className="text-ink-400">{r.entry.surah}:{r.entry.ayah}</span>
-                  <BookOpen className="h-3 w-3 text-ink-500 ml-auto" />
+                  <BookOpen className="h-3 w-3 text-ink-500 ms-auto" />
                 </div>
                 <p dir="rtl" lang="ar" className="font-arabic text-2xl leading-loose text-ink-50 text-balance">
                   {r.entry.arabic}

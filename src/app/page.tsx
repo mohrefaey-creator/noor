@@ -11,8 +11,12 @@ import Image from "next/image";
 import { usePreferences } from "@/lib/store/preferences";
 import { useHifz } from "@/lib/store/hifz-store";
 import { getSurah } from "@/data/surahs";
+import { useT, useLocale } from "@/lib/i18n/use-locale";
+import { LanguageToggle } from "@/components/common/language-toggle";
 
 export default function Home() {
+  const t = useT();
+  const locale = useLocale();
   const [q, setQ] = useState("");
   const [tab, setTab] = useState("all");
   const lastRead = usePreferences((s) => s.lastRead);
@@ -48,13 +52,16 @@ export default function Home() {
 
   const lastSurah = lastRead ? getSurah(lastRead.surah) : undefined;
 
+  // Streak unit (Arabic uses different forms; we keep two-form rule like English).
+  const streakUnit = streak.current === 1 ? t("home.unit.day") : t("home.unit.days");
+
   return (
     <div>
       {/* Logo header */}
       <section className="pt-8 pb-10 flex flex-col items-center gap-6 text-center">
         <Image
           src="/logo.png"
-          alt="Noor — Quran app"
+          alt={t("home.appAlt")}
           width={280}
           height={280}
           priority
@@ -66,12 +73,13 @@ export default function Home() {
             href={lastRead && lastSurah ? `/mushaf/${lastSurah.page}` : "/mushaf/1"}
             className={buttonVariants({ variant: "default", size: "lg" })}
           >
-            {lastRead ? "Continue Reading" : "Open Mushaf"}
-            <ArrowRight className="h-4 w-4" />
+            {lastRead ? t("action.continueReading") : t("action.openMushaf")}
+            <ArrowRight className="h-4 w-4 rtl:rotate-180" />
           </Link>
           <Link href="/hifz/trainer" className={buttonVariants({ variant: "emerald", size: "lg" })}>
-            <Mic className="h-4 w-4" /> Voice Trainer
+            <Mic className="h-4 w-4" /> {t("action.voiceTrainer")}
           </Link>
+          <LanguageToggle variant="pill" />
         </div>
       </section>
 
@@ -79,14 +87,14 @@ export default function Home() {
       <section className="mb-8 grid grid-cols-2 md:grid-cols-3 gap-3">
         <StatCard
           icon={<Flame className="h-4 w-4 text-orange-300" />}
-          label="Streak"
-          value={`${streak.current} day${streak.current === 1 ? "" : "s"}`}
+          label={t("home.stat.streak")}
+          value={t("home.stat.streak.value", { n: streak.current, unit: streakUnit })}
           accent="from-orange-400/20 to-orange-300/5"
         />
         <StatCard
           icon={<BookmarkCheck className="h-4 w-4 text-emerald-glow" />}
-          label="Memorized"
-          value={`${Object.keys(memorized).length} ayāt`}
+          label={t("home.stat.memorized")}
+          value={t("home.stat.memorized.value", { n: Object.keys(memorized).length })}
           accent="from-emerald-glow/20 to-emerald/5"
         />
         {lastSurah ? (
@@ -94,16 +102,25 @@ export default function Home() {
             href={`/mushaf/${lastSurah.page}#surah-${lastSurah.id}`}
             className="rounded-2xl glass p-4 hover:bg-black/[0.06] transition-colors group"
           >
-            <div className="text-[10px] uppercase tracking-wider text-ink-500">Continue</div>
+            <div className="text-[10px] uppercase tracking-wider text-ink-500">
+              {t("home.stat.continue")}
+            </div>
             <div className="mt-1 font-display text-lg text-ink-50 group-hover:text-gold-400 transition-colors">
-              {lastSurah.transliteration} <span className="text-ink-400 text-sm">· {lastRead!.ayah}</span>
+              {locale === "ar" ? (
+                <span dir="rtl" lang="ar" className="font-arabic">
+                  {lastSurah.name}
+                </span>
+              ) : (
+                lastSurah.transliteration
+              )}{" "}
+              <span className="text-ink-400 text-sm">· {lastRead!.ayah}</span>
             </div>
           </Link>
         ) : (
           <StatCard
             icon={<Sparkles className="h-4 w-4 text-gold-400" />}
-            label="Ready"
-            value="Pick a surah"
+            label={t("home.stat.ready")}
+            value={t("home.stat.ready.value")}
             accent="from-gold-400/20 to-gold-500/5"
           />
         )}
@@ -113,29 +130,32 @@ export default function Home() {
       <section>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
           <h2 className="font-display text-2xl text-ink-50">
-            Surahs <span className="text-ink-500 text-sm align-middle ml-2">114 chapters</span>
+            {t("home.surahs.title")}{" "}
+            <span className="text-ink-500 text-sm align-middle ms-2">
+              {t("home.surahs.count")}
+            </span>
           </h2>
           <div className="flex items-center gap-2 flex-wrap">
             <Tabs
               value={tab}
               onChange={setTab}
               options={[
-                { value: "all", label: "All" },
-                { value: "meccan", label: "Meccan" },
-                { value: "medinan", label: "Medinan" },
-                { value: "memorizing", label: "Memorizing" },
+                { value: "all", label: t("home.tabs.all") },
+                { value: "meccan", label: t("home.tabs.meccan") },
+                { value: "medinan", label: t("home.tabs.medinan") },
+                { value: "memorizing", label: t("home.tabs.memorizing") },
               ]}
             />
           </div>
         </div>
 
         <div className="relative mb-6">
-          <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
+          <Search className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search by name, number, or English meaning…"
-            className="pl-10"
+            placeholder={t("home.search.placeholder")}
+            className="ps-10"
           />
         </div>
 
@@ -149,7 +169,7 @@ export default function Home() {
             />
           ))}
           {filtered.length === 0 && (
-            <p className="col-span-full text-center text-ink-400 py-10">No surahs match that.</p>
+            <p className="col-span-full text-center text-ink-400 py-10">{t("home.empty")}</p>
           )}
         </div>
       </section>

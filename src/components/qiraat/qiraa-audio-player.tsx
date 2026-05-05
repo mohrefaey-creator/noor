@@ -8,12 +8,12 @@ import {
   getRecitersForRiwayah,
   getQiraaAyahUrl,
   getQiraaSurahUrl,
-  type QiraaReciter,
 } from "@/data/qiraat-audio";
 import { type RiwayahId, getRiwayah } from "@/data/qiraat/metadata";
 import type { PageAyah } from "@/lib/api/quran";
 import { formatDuration, pad } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/use-locale";
 
 interface QiraaAudioPlayerProps {
   open: boolean;
@@ -23,21 +23,21 @@ interface QiraaAudioPlayerProps {
 }
 
 export function QiraaAudioPlayer({ open, riwayah, ayahs, onClose }: QiraaAudioPlayerProps) {
+  const t = useT();
   const reciters = useMemo(() => getRecitersForRiwayah(riwayah), [riwayah]);
   const meta = getRiwayah(riwayah);
   const [reciterId, setReciterId] = useState(reciters[0]?.id ?? "");
   const reciter = reciters.find((r) => r.id === reciterId) ?? reciters[0];
 
-  const [ayahIdx, setAyahIdx] = useState(0); // index into the current page's ayahs (only used for ayah-level audio)
+  const [ayahIdx, setAyahIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [t, setT] = useState(0);
-  const [d, setD] = useState(0);
+  const [time, setTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   const [vol, setVol] = useState(0.85);
   const [error, setError] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Surahs on the current page (groups in display order)
   const surahsOnPage = useMemo(
     () => Array.from(new Set(ayahs.map((a) => a.surah.number))),
     [ayahs]
@@ -51,14 +51,12 @@ export function QiraaAudioPlayer({ open, riwayah, ayahs, onClose }: QiraaAudioPl
     }
   }, [surahsOnPage.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Reset when reciter or page changes
   useEffect(() => {
     if (reciters.length > 0 && !reciters.find((r) => r.id === reciterId)) {
       setReciterId(reciters[0].id);
     }
   }, [reciters, reciterId]);
 
-  // Resolve the URL for the current source
   const currentUrl = useMemo(() => {
     if (!reciter) return null;
     if (reciter.ayahLevel) {
@@ -69,7 +67,6 @@ export function QiraaAudioPlayer({ open, riwayah, ayahs, onClose }: QiraaAudioPl
     return getQiraaSurahUrl(reciter, currentSurah);
   }, [reciter, ayahIdx, ayahs, currentSurah]);
 
-  // Wire up the <audio> element on URL changes
   useEffect(() => {
     if (!open) return;
     if (!currentUrl) return;
@@ -79,10 +76,9 @@ export function QiraaAudioPlayer({ open, riwayah, ayahs, onClose }: QiraaAudioPl
     a.volume = vol;
     setError(null);
     a.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
-    const onTime = () => setT(a.currentTime);
-    const onMeta = () => setD(a.duration || 0);
+    const onTime = () => setTime(a.currentTime);
+    const onMeta = () => setDuration(a.duration || 0);
     const onEnd = () => {
-      // For ayah-level reciters, advance through page ayahs automatically
       if (reciter?.ayahLevel && ayahIdx + 1 < ayahs.length) {
         setAyahIdx((i) => i + 1);
       } else {
@@ -90,7 +86,7 @@ export function QiraaAudioPlayer({ open, riwayah, ayahs, onClose }: QiraaAudioPl
       }
     };
     const onErr = () => {
-      setError("Audio could not load. The CDN may be slow or this Riwāyah may not have this surah recorded.");
+      setError(t("qaPlayer.error"));
       setPlaying(false);
     };
     a.addEventListener("timeupdate", onTime);
@@ -106,12 +102,10 @@ export function QiraaAudioPlayer({ open, riwayah, ayahs, onClose }: QiraaAudioPl
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUrl, open]);
 
-  // Adjust volume live
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = vol;
   }, [vol]);
 
-  // Cleanup on unmount
   useEffect(
     () => () => {
       audioRef.current?.pause();
@@ -137,7 +131,6 @@ export function QiraaAudioPlayer({ open, riwayah, ayahs, onClose }: QiraaAudioPl
     if (reciter.ayahLevel) {
       if (ayahIdx + 1 < ayahs.length) setAyahIdx((i) => i + 1);
     } else {
-      // surah-level: jump to next surah on this page if any
       const nextIdx = surahsOnPage.indexOf(currentSurah) + 1;
       if (nextIdx < surahsOnPage.length) setCurrentSurah(surahsOnPage[nextIdx]);
     }
@@ -164,22 +157,19 @@ export function QiraaAudioPlayer({ open, riwayah, ayahs, onClose }: QiraaAudioPl
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 30, opacity: 0 }}
           transition={{ type: "spring", damping: 26, stiffness: 240 }}
-          // Mobile: render inline in the document flow (below the page) so it never
-          // covers the mushaf. Desktop (lg+): float at the bottom of the viewport.
           className={cn(
             "mt-4 w-full",
             "lg:mt-0 lg:fixed lg:left-1/2 lg:-translate-x-1/2 lg:z-40 lg:w-[min(640px,calc(100vw-1rem))] lg:bottom-6"
           )}
         >
           <div className="glass-strong rounded-2xl shadow-2xl overflow-hidden">
-            {/* Header */}
             <div className="flex items-center gap-3 px-4 py-3 border-b border-black/[0.05]">
               <div className="h-9 w-9 rounded-xl bg-red-400/15 border border-red-400/30 flex items-center justify-center flex-shrink-0">
                 <Headphones className="h-4 w-4 text-red-300" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] uppercase tracking-wider text-red-300/80">
-                  Listening · {meta.name}
+                  {t("qaPlayer.listening", { name: meta.name })}
                 </p>
                 <p
                   dir="rtl"
@@ -192,25 +182,21 @@ export function QiraaAudioPlayer({ open, riwayah, ayahs, onClose }: QiraaAudioPl
               </div>
               <button
                 onClick={onClose}
-                aria-label="Close"
+                aria-label={t("action.close")}
                 className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-ink-300 hover:bg-black/[0.06]"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            {/* Body */}
             <div className="px-4 py-3 space-y-3">
               {reciters.length === 0 ? (
-                <p className="text-sm text-ink-300 py-4 text-center">
-                  No public recording is yet available for this Qirā’ah. Coming soon.
-                </p>
+                <p className="text-sm text-ink-300 py-4 text-center">{t("qaPlayer.noAudio")}</p>
               ) : (
                 <>
-                  {/* Reciter selection */}
                   <div>
                     <label className="text-[10px] uppercase tracking-wider text-ink-400 mb-1.5 block">
-                      Reciter
+                      {t("qaPlayer.reciter")}
                     </label>
                     <Select
                       value={reciterId}
@@ -220,76 +206,75 @@ export function QiraaAudioPlayer({ open, riwayah, ayahs, onClose }: QiraaAudioPl
                         label: `${r.name}${r.notable ? " — " + r.notable : ""}`,
                       }))}
                       className="w-full"
-                      ariaLabel="Reciter"
+                      ariaLabel={t("qaPlayer.reciter")}
                     />
                   </div>
 
-                  {/* Now-playing strip */}
                   <div className="flex items-center justify-between text-xs gap-2">
                     {reciter?.ayahLevel ? (
                       <span className="text-ink-300">
-                        Ayah on this page{" "}
+                        {t("qaPlayer.ayahOnPage")}{" "}
                         <span className="text-gold-400 font-medium">
                           {currentAyah?.surah.number}:{currentAyah?.numberInSurah}
                         </span>{" "}
-                        <span className="text-ink-500">({ayahIdx + 1} / {ayahs.length})</span>
+                        <span className="text-ink-500">
+                          {t("qaPlayer.ayahFraction", { i: ayahIdx + 1, total: ayahs.length })}
+                        </span>
                       </span>
                     ) : (
                       <span className="text-ink-300">
-                        Surah <span className="text-gold-400 font-medium">{currentSurah}</span>{" "}
-                        <span className="text-ink-500">(plays from start of surah)</span>
+                        {t("qaPlayer.surahLine", { n: currentSurah })}{" "}
+                        <span className="text-ink-500">{t("qaPlayer.fromStart")}</span>
                       </span>
                     )}
-                    <span className="text-ink-400 tabular-nums">
-                      {formatDuration(t)} / {formatDuration(d)}
+                    <span className="text-ink-400 tabular-nums" dir="ltr">
+                      {formatDuration(time)} / {formatDuration(duration)}
                     </span>
                   </div>
 
                   <Slider
-                    value={t}
+                    value={time}
                     min={0}
-                    max={d || 1}
+                    max={duration || 1}
                     step={0.01}
                     onChange={(v) => audioRef.current && (audioRef.current.currentTime = v)}
-                    ariaLabel="Audio progress"
+                    ariaLabel={t("listen.progressAria")}
                   />
 
-                  {/* Transport */}
                   <div className="flex items-center justify-center gap-2">
                     <button
                       onClick={prev}
                       className="h-9 w-9 inline-flex items-center justify-center rounded-lg text-ink-200 hover:bg-black/[0.06]"
-                      aria-label="Previous"
+                      aria-label={t("action.previous")}
                     >
-                      <SkipBack className="h-4 w-4" />
+                      <SkipBack className="h-4 w-4 rtl:rotate-180" />
                     </button>
                     <button
                       onClick={toggle}
                       className="h-12 w-12 inline-flex items-center justify-center rounded-full bg-gradient-to-b from-gold-400 to-gold-600 text-ink-950 shadow-[0_4px_20px_-4px_rgba(234, 88, 12,0.5)]"
-                      aria-label={playing ? "Pause" : "Play"}
+                      aria-label={playing ? t("action.pause") : t("action.play")}
                     >
-                      {playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
+                      {playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ms-0.5" />}
                     </button>
                     <button
                       onClick={next}
                       className="h-9 w-9 inline-flex items-center justify-center rounded-lg text-ink-200 hover:bg-black/[0.06]"
-                      aria-label="Next"
+                      aria-label={t("action.next")}
                     >
-                      <SkipForward className="h-4 w-4" />
+                      <SkipForward className="h-4 w-4 rtl:rotate-180" />
                     </button>
-                    <div className="flex items-center gap-2 ml-2 flex-1 max-w-[140px]">
+                    <div className="flex items-center gap-2 ms-2 flex-1 max-w-[140px]">
                       <Volume2 className="h-3.5 w-3.5 text-ink-400 flex-shrink-0" />
                       <Slider
                         value={vol * 100}
                         min={0}
                         max={100}
                         onChange={(v) => setVol(v / 100)}
-                        ariaLabel="Volume"
+                        ariaLabel={t("listen.volumeAria")}
                       />
                     </div>
                   </div>
 
-                  {/* Notable / hint */}
                   {reciter?.notable && (
                     <p className="text-[11px] text-ink-400 flex items-start gap-1.5 leading-relaxed">
                       <BadgeInfo className="h-3 w-3 text-gold-400 mt-0.5 flex-shrink-0" />

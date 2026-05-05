@@ -10,8 +10,10 @@ import { useHifz } from "@/lib/store/hifz-store";
 import { usePreferences } from "@/lib/store/preferences";
 import { SURAHS, getSurah } from "@/data/surahs";
 import { Slider } from "@/components/ui/slider";
+import { useT } from "@/lib/i18n/use-locale";
 
 export default function HifzDashboard() {
+  const t = useT();
   const memorized = useHifz((s) => s.memorized);
   const sessions = useHifz((s) => s.sessions);
   const goalMinutes = useHifz((s) => s.goalMinutes);
@@ -48,12 +50,12 @@ export default function HifzDashboard() {
   return (
     <div>
       <PageHeader
-        title="Hifz"
-        arabicTitle="حفظ"
-        description="Track what you've memorized, review what slips, and start a voice training session."
+        title={t("hifz.title")}
+        arabicTitle={t("hifz.arabicTitle")}
+        description={t("hifz.description")}
         right={
           <Link href="/hifz/trainer" className={buttonVariants({ variant: "emerald", size: "lg" })}>
-            <Mic className="h-4 w-4" /> Start Training
+            <Mic className="h-4 w-4" /> {t("action.startTraining")}
           </Link>
         }
       />
@@ -61,11 +63,15 @@ export default function HifzDashboard() {
       <section className="grid md:grid-cols-3 gap-4 mb-8">
         <StreakCard />
         <div className="glass-strong rounded-3xl p-6 relative overflow-hidden">
-          <div className="absolute -top-16 -right-16 h-44 w-44 rounded-full bg-emerald-glow/15 blur-3xl" />
+          <div className="absolute -top-16 -end-16 h-44 w-44 rounded-full bg-emerald-glow/15 blur-3xl" />
           <div className="relative">
-            <p className="text-xs uppercase tracking-wider text-emerald-glow/80">Memorized</p>
+            <p className="text-xs uppercase tracking-wider text-emerald-glow/80">
+              {t("hifz.memorized.label")}
+            </p>
             <p className="font-display text-5xl mt-1 text-ink-50">{totalAyahsMem}</p>
-            <p className="text-ink-400 text-sm mt-1">of {TOTAL_AYAHS} ayāt · {overallPct.toFixed(2)}%</p>
+            <p className="text-ink-400 text-sm mt-1">
+              {t("hifz.memorized.of", { total: TOTAL_AYAHS, pct: overallPct.toFixed(2) })}
+            </p>
             <div className="mt-6 h-2 rounded-full bg-black/[0.06] overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
@@ -77,13 +83,15 @@ export default function HifzDashboard() {
           </div>
         </div>
         <div className="glass-strong rounded-3xl p-6 relative overflow-hidden">
-          <div className="absolute -top-16 -right-16 h-44 w-44 rounded-full bg-gold-400/15 blur-3xl" />
+          <div className="absolute -top-16 -end-16 h-44 w-44 rounded-full bg-gold-400/15 blur-3xl" />
           <div className="relative">
-            <p className="text-xs uppercase tracking-wider text-gold-400/80">Daily Goal</p>
+            <p className="text-xs uppercase tracking-wider text-gold-400/80">
+              {t("hifz.dailyGoal.label")}
+            </p>
             <div className="flex items-center gap-3 mt-1">
               <p className="font-display text-5xl text-ink-50">{goalMinutes}</p>
-              <span className="text-ink-400 mt-3">min</span>
-              <div className="ml-auto flex flex-col gap-1.5">
+              <span className="text-ink-400 mt-3">{t("hifz.dailyGoal.unit")}</span>
+              <div className="ms-auto flex flex-col gap-1.5">
                 <button
                   className="h-7 w-7 rounded-lg bg-black/[0.05] hover:bg-black/[0.1] flex items-center justify-center"
                   onClick={() => setGoal(goalMinutes + 5)}
@@ -99,7 +107,7 @@ export default function HifzDashboard() {
               </div>
             </div>
             <div className="mt-6">
-              <Slider value={goalMinutes} min={5} max={60} step={5} onChange={setGoal} ariaLabel="Goal minutes" />
+              <Slider value={goalMinutes} min={5} max={60} step={5} onChange={setGoal} ariaLabel={t("hifz.dailyGoal.aria")} />
             </div>
           </div>
         </div>
@@ -108,7 +116,7 @@ export default function HifzDashboard() {
       {/* In progress */}
       <section className="mb-10">
         <h2 className="font-display text-xl text-ink-50 mb-4 flex items-center gap-2">
-          <Target className="h-4 w-4 text-gold-400" /> In progress
+          <Target className="h-4 w-4 text-gold-400" /> {t("hifz.inProgress")}
         </h2>
         {inProgress.length === 0 ? (
           <EmptyTip />
@@ -125,15 +133,22 @@ export default function HifzDashboard() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-display text-lg text-ink-50">{surah.transliteration}</p>
-                      <p className="text-xs text-ink-400">{count}/{surah.ayahs} memorized</p>
+                      <p className="text-xs text-ink-400">
+                        {t("hifz.inProgress.memorizedOf", { n: count, total: surah.ayahs })}
+                      </p>
                     </div>
-                    <span dir="rtl" lang="ar" className="font-arabic text-2xl gold-text">{surah.name}</span>
+                    <span dir="rtl" lang="ar" className="font-arabic text-2xl gold-text">
+                      {surah.name}
+                    </span>
                   </div>
                   <div className="mt-3 h-1.5 rounded-full bg-black/[0.06] overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-emerald-glow to-emerald rounded-full" style={{ width: `${pct}%` }} />
+                    <div
+                      className="h-full bg-gradient-to-r from-emerald-glow to-emerald rounded-full"
+                      style={{ width: `${pct}%` }}
+                    />
                   </div>
                   <p className="mt-2 text-[11px] text-emerald-glow flex items-center gap-1">
-                    <Mic className="h-3 w-3" /> Train this
+                    <Mic className="h-3 w-3" /> {t("hifz.inProgress.train")}
                   </p>
                 </Link>
               );
@@ -142,11 +157,10 @@ export default function HifzDashboard() {
         )}
       </section>
 
-      {/* Completed */}
       {completed.length > 0 && (
         <section className="mb-10">
           <h2 className="font-display text-xl text-ink-50 mb-4 flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-gold-400" /> Completed surahs
+            <Sparkles className="h-4 w-4 text-gold-400" /> {t("hifz.completed")}
           </h2>
           <div className="flex flex-wrap gap-2">
             {completed.map(({ surah }) => (
@@ -165,10 +179,10 @@ export default function HifzDashboard() {
       <section className="grid md:grid-cols-2 gap-4">
         <div className="glass rounded-2xl p-5">
           <h3 className="font-display text-lg text-ink-50 mb-3 flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-gold-400" /> Recent sessions
+            <Calendar className="h-4 w-4 text-gold-400" /> {t("hifz.recentSessions")}
           </h3>
           {sessions.length === 0 ? (
-            <p className="text-sm text-ink-400">No sessions yet. Try the voice trainer.</p>
+            <p className="text-sm text-ink-400">{t("hifz.noSessions")}</p>
           ) : (
             <ul className="space-y-2">
               {sessions.slice(0, 5).map((s) => {
@@ -185,7 +199,7 @@ export default function HifzDashboard() {
                         {surah?.transliteration} · {s.range.fromAyah}–{s.range.toAyah}
                       </p>
                       <p className="text-[11px] text-ink-400">
-                        {new Date(s.startedAt).toLocaleString()} · {correct}/{total} clean
+                        {new Date(s.startedAt).toLocaleString()} · {t("hifz.cleanFraction", { correct, total })}
                       </p>
                     </div>
                   </li>
@@ -196,10 +210,10 @@ export default function HifzDashboard() {
         </div>
         <div className="glass rounded-2xl p-5">
           <h3 className="font-display text-lg text-ink-50 mb-3 flex items-center gap-2">
-            <BookmarkCheck className="h-4 w-4 text-gold-400" /> Bookmarks
+            <BookmarkCheck className="h-4 w-4 text-gold-400" /> {t("hifz.bookmarks")}
           </h3>
           {bookmarks.length === 0 ? (
-            <p className="text-sm text-ink-400">No bookmarks yet.</p>
+            <p className="text-sm text-ink-400">{t("hifz.noBookmarks")}</p>
           ) : (
             <ul className="space-y-1.5 max-h-64 overflow-y-auto scrollbar-thin">
               {bookmarks
@@ -224,9 +238,8 @@ export default function HifzDashboard() {
         </div>
       </section>
 
-      {/* Surah grid */}
       <section className="mt-10">
-        <h2 className="font-display text-xl text-ink-50 mb-4">All surahs</h2>
+        <h2 className="font-display text-xl text-ink-50 mb-4">{t("hifz.allSurahs")}</h2>
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
           {SURAHS.map((s) => {
             const c = memorizedPerSurah.get(s.id) ?? 0;
@@ -254,10 +267,10 @@ export default function HifzDashboard() {
     return (
       <div className="glass rounded-2xl p-8 text-center">
         <Sparkles className="h-8 w-8 text-gold-400 mx-auto mb-3" />
-        <p className="text-ink-200">No surahs in progress yet.</p>
-        <p className="text-sm text-ink-400 mt-1">Tap the circle next to any ayah to mark it memorized, or jump straight into the trainer.</p>
+        <p className="text-ink-200">{t("hifz.empty.title")}</p>
+        <p className="text-sm text-ink-400 mt-1">{t("hifz.empty.body")}</p>
         <Link href="/hifz/trainer" className={buttonVariants({ variant: "emerald", size: "sm" }) + " mt-4"}>
-          <Mic className="h-3.5 w-3.5" /> Open Trainer
+          <Mic className="h-3.5 w-3.5" /> {t("action.openTrainer")}
         </Link>
       </div>
     );
