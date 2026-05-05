@@ -9,5 +9,6 @@ next-env.d.ts
 *.tsbuildinfo
 .cache
 .claude/settings.local.json
+.claude/scheduled_tasks.lock
 
 .vercel
