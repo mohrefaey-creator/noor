@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Headphones, GraduationCap, Mic, Search } from "lucide-react";
+import { BookOpen, Headphones, GraduationCap, Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n/use-locale";
 
@@ -10,7 +10,6 @@ const NAV = [
   { href: "/listen", labelKey: "nav.listen", icon: Headphones },
   { href: "/hifz/trainer", labelKey: "nav.train", icon: Mic, accent: true },
   { href: "/qiraat", labelKey: "nav.qiraat", icon: GraduationCap },
-  { href: "/search", labelKey: "nav.search", icon: Search },
 ];
 
 export function MobileNav() {
