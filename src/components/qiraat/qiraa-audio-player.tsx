@@ -47,17 +47,19 @@ export function QiraaAudioPlayer({ open, riwayah, ayahs, onClose, onPageEnd }: Q
   );
   const [currentSurah, setCurrentSurah] = useState<number>(surahsOnPage[0] ?? 1);
 
-  // Reset ayahIdx whenever the page's ayah list changes (new page loaded —
-  // including auto-advance from onPageEnd, which can land on a continuation
-  // of the same surah where surahsOnPage stays identical).
+  // Reset ayahIdx synchronously whenever the page's ayah list changes (new
+  // page loaded). Done as a render-time check rather than in useEffect so the
+  // currentUrl useMemo below sees ayahIdx=0 in the same render that the new
+  // ayahs arrive — otherwise we'd briefly request the audio file at the OLD
+  // ayahIdx within the NEW ayahs array (e.g. land on the wrong ayah for a
+  // moment after a page turn).
   const pageKey = ayahs.length > 0 ? `${ayahs[0].surah.number}:${ayahs[0].numberInSurah}` : "";
-  useEffect(() => {
-    if (surahsOnPage.length > 0) {
-      setCurrentSurah(surahsOnPage[0]);
-      setAyahIdx(0);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageKey]);
+  const [trackedPageKey, setTrackedPageKey] = useState(pageKey);
+  if (pageKey !== trackedPageKey) {
+    setTrackedPageKey(pageKey);
+    setAyahIdx(0);
+    if (surahsOnPage.length > 0) setCurrentSurah(surahsOnPage[0]);
+  }
 
   useEffect(() => {
     if (reciters.length > 0 && !reciters.find((r) => r.id === reciterId)) {
