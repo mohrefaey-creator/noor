@@ -276,7 +276,27 @@ export default function MushafRoute({ params }: PageProps) {
           ayah={audioAyah.ayah}
           totalAyahs={audioAyah.total}
           reciterId={reciterId}
-          onAyahChange={(a) => setAudioAyah((prev) => (prev ? { ...prev, ayah: a } : null))}
+          onAyahChange={(a) => {
+            // Follow the recitation: when audio crosses the last ayah on this
+            // page, navigate forward so the listener never has to click "next".
+            // Guard with "audio was on this page" so we don't drag the user
+            // forward if they manually navigated away while audio is mid-flight.
+            const wasOnThisPage =
+              audioAyah !== null &&
+              pageAyahs.some(
+                (p) =>
+                  p.surah.number === audioAyah.surah && p.numberInSurah === audioAyah.ayah
+              );
+            const nowOnThisPage =
+              audioAyah !== null &&
+              pageAyahs.some(
+                (p) => p.surah.number === audioAyah.surah && p.numberInSurah === a
+              );
+            setAudioAyah((prev) => (prev ? { ...prev, ayah: a } : null));
+            if (wasOnThisPage && !nowOnThisPage && pageNumber < TOTAL_PAGES) {
+              goPage(pageNumber + 1);
+            }
+          }}
           onClose={() => setAudioAyah(null)}
         />
       )}
@@ -285,6 +305,11 @@ export default function MushafRoute({ params }: PageProps) {
         open={qiraaPlayerOpen}
         riwayah={riwayah}
         ayahs={pageAyahs}
+        onPageEnd={() => {
+          // Ayah-level Qira'at reciter just finished the last ayah on this
+          // page — turn the page so listening continues without a manual tap.
+          if (pageNumber < TOTAL_PAGES) goPage(pageNumber + 1);
+        }}
         onClose={() => setQiraaPlayerOpen(false)}
       />
     </div>

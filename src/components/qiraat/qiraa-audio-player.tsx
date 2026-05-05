@@ -20,9 +20,12 @@ interface QiraaAudioPlayerProps {
   riwayah: RiwayahId;
   ayahs: PageAyah[];
   onClose: () => void;
+  // Called by ayah-level reciters when the last ayah on the current page
+  // finishes — lets the parent advance the mushaf page so listening continues.
+  onPageEnd?: () => void;
 }
 
-export function QiraaAudioPlayer({ open, riwayah, ayahs, onClose }: QiraaAudioPlayerProps) {
+export function QiraaAudioPlayer({ open, riwayah, ayahs, onClose, onPageEnd }: QiraaAudioPlayerProps) {
   const t = useT();
   const reciters = useMemo(() => getRecitersForRiwayah(riwayah), [riwayah]);
   const meta = getRiwayah(riwayah);
@@ -44,12 +47,17 @@ export function QiraaAudioPlayer({ open, riwayah, ayahs, onClose }: QiraaAudioPl
   );
   const [currentSurah, setCurrentSurah] = useState<number>(surahsOnPage[0] ?? 1);
 
+  // Reset ayahIdx whenever the page's ayah list changes (new page loaded —
+  // including auto-advance from onPageEnd, which can land on a continuation
+  // of the same surah where surahsOnPage stays identical).
+  const pageKey = ayahs.length > 0 ? `${ayahs[0].surah.number}:${ayahs[0].numberInSurah}` : "";
   useEffect(() => {
     if (surahsOnPage.length > 0) {
       setCurrentSurah(surahsOnPage[0]);
       setAyahIdx(0);
     }
-  }, [surahsOnPage.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageKey]);
 
   useEffect(() => {
     if (reciters.length > 0 && !reciters.find((r) => r.id === reciterId)) {
@@ -79,8 +87,17 @@ export function QiraaAudioPlayer({ open, riwayah, ayahs, onClose }: QiraaAudioPl
     const onTime = () => setTime(a.currentTime);
     const onMeta = () => setDuration(a.duration || 0);
     const onEnd = () => {
-      if (reciter?.ayahLevel && ayahIdx + 1 < ayahs.length) {
-        setAyahIdx((i) => i + 1);
+      if (reciter?.ayahLevel) {
+        if (ayahIdx + 1 < ayahs.length) {
+          setAyahIdx((i) => i + 1);
+        } else if (onPageEnd) {
+          // Last ayah on this page finished — ask the parent to advance the
+          // mushaf page. New ayahs will arrive via the prop and the pageKey
+          // effect resets ayahIdx to 0 so audio continues seamlessly.
+          onPageEnd();
+        } else {
+          setPlaying(false);
+        }
       } else {
         setPlaying(false);
       }
