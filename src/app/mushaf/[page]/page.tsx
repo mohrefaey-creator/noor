@@ -143,7 +143,7 @@ export default function MushafRoute({ params }: PageProps) {
           </button>
 
           <div className="flex-1 flex items-center justify-center gap-2 glass rounded-xl px-3 h-11 text-sm">
-            <span className="text-ink-400 hidden sm:inline">{t("mushaf.page")}</span>
+            <span className="text-ink-400">{t("mushaf.page")}</span>
             <input
               type="number"
               inputMode="numeric"
@@ -198,7 +198,7 @@ export default function MushafRoute({ params }: PageProps) {
               title={t("mushaf.scannedTitle")}
             >
               <ImageIcon className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{t("mushaf.scanned")}</span>
+              <span>{t("mushaf.scanned")}</span>
             </button>
             <button
               type="button"
@@ -212,7 +212,7 @@ export default function MushafRoute({ params }: PageProps) {
               title={t("mushaf.writtenTitle")}
             >
               <Type className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{t("mushaf.written")}</span>
+              <span>{t("mushaf.written")}</span>
             </button>
           </div>
 
@@ -230,10 +230,9 @@ export default function MushafRoute({ params }: PageProps) {
               }
             >
               <Headphones className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">
+              <span>
                 {recitersForRiwayah.length === 0 ? t("mushaf.noAudio") : t("mushaf.listenInQiraah")}
               </span>
-              <span className="sm:hidden">{t("mushaf.listenShort")}</span>
             </Button>
           )}
           <Button
@@ -243,7 +242,7 @@ export default function MushafRoute({ params }: PageProps) {
             aria-label={t("mushaf.aboutThisView")}
           >
             <Info className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">{showControls ? t("action.hide") : t("action.about")}</span>
+            <span>{showControls ? t("action.hide") : t("action.about")}</span>
           </Button>
         </div>
       </header>
